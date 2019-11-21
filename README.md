@@ -1,4 +1,4 @@
-# mguard-atv-merge - A Tool for merging mGuard(TM) configuration files
+# mguard-atv-merge
 
 [![Build Status](https://dev.azure.com/griffinplus/mGuard-ATV-Merge/_apis/build/status/mguard-atv-merge?branchName=master)](https://dev.azure.com/griffinplus/mGuard-ATV-Merge/_build/latest?definitionId=16&branchName=master)
 [![Release](https://img.shields.io/github/release/griffinplus/mguard-atv-merge.svg?logo=github)](https://github.com/GriffinPlus/mguard-atv-merge/releases)
