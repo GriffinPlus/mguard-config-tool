@@ -1,0 +1,106 @@
+trigger:
+  tags:
+    include:
+    - v*
+  branches:
+    include:
+    - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  GOBIN:  '$(GOPATH)/bin' # Go binaries path
+  GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
+  GOROOT: '$(Agent.BuildDirectory)/go' # Go installation path
+  GOVERSION: '1.13.3'
+  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+
+steps:
+- task: GitVersion@5
+  inputs:
+    runtime: 'core'
+  displayName: 'Determine version number'
+
+- script: |
+    wget "https://storage.googleapis.com/golang/go$(GOVERSION).linux-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go$(GOVERSION).tar.gz"
+    tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go$(GOVERSION).tar.gz"
+    echo '##vso[task.prependpath]$(GOBIN)'
+    echo '##vso[task.prependpath]$(GOROOT)/bin'
+  displayName: 'Install Go $(GOVERSION)'
+
+- script: |
+    set -e
+    mkdir -p '$(GOBIN)'
+    mkdir -p '$(GOPATH)/pkg'
+    mkdir -p '$(modulePath)'
+    shopt -s extglob
+    shopt -s dotglob
+    mv !(gopath) '$(modulePath)'
+    echo '##vso[task.prependpath]$(GOBIN)'
+    echo '##vso[task.prependpath]$(GOROOT)/bin'
+  displayName: 'Set up the Go workspace'
+
+- script: |
+    set -e
+    go version
+    go get -v -t -d ./...
+    if [ -f Gopkg.toml ]; then
+        curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+        dep ensure
+    fi
+  workingDirectory: '$(modulePath)'
+  displayName: 'Get dependencies'
+
+- script: |
+    while read line; do
+      export GOOS=$(echo "$line" | cut -d'/' -f1)
+      export GOARCH=$(echo "$line" | cut -d'/' -f2)
+      echo "Building with GOOS=$GOOS and GOARCH=$GOARCH..."
+      [[ "$GOOS" = "windows" ]] && EXTENSION=".exe" || EXTENSION=""
+      go build \
+        -o "$(Build.ArtifactStagingDirectory)/$GOOS-$GOARCH/mguard-atv-merge${EXTENSION}" \
+        -ldflags="-X 'main.buildTime=$(date --rfc-2822)' -X 'main.version=$GITVERSION_SEMVER' -X 'main.fullVersion=$GITVERSION_INFORMATIONALVERSION'" .
+    done <targets.txt
+  workingDirectory: '$(modulePath)'
+  displayName: 'Build'
+
+- script: $(Build.ArtifactStagingDirectory)/linux-amd64/mguard-atv-merge || true
+  displayName: 'Print mguard-atv-merge usage text'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+  displayName: 'Publish build artifacts'
+
+- script: |
+    while read line; do
+      export GOOS=$(echo "$line" | cut -d'/' -f1)
+      export GOARCH=$(echo "$line" | cut -d'/' -f2)
+      cp README.md "$(Build.ArtifactStagingDirectory)/$GOOS-$GOARCH"
+      cp LICENSE "$(Build.ArtifactStagingDirectory)/$GOOS-$GOARCH"
+      cp THIRD_PARTY_NOTICES "$(Build.ArtifactStagingDirectory)/$GOOS-$GOARCH"
+      pushd "$(Build.ArtifactStagingDirectory)/$GOOS-$GOARCH"
+      zip -r "mguard-atv-merge-v$(GitVersion.SemVer)-$GOOS-$GOARCH.zip" .
+      popd
+    done <targets.txt
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+  workingDirectory: '$(modulePath)'
+  displayName: 'Packing'
+
+- task: GitHubRelease@1
+  displayName: 'Publish to Github Releases'
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+  inputs:
+    gitHubConnection: 'Github'
+    repositoryName: '$(Build.Repository.Name)'
+    action: 'edit'
+    target: '$(Build.SourceVersion)'
+    tag: '$(Build.SourceBranchName)'
+    title: 'Product Release $(GitVersion.SemVer)'
+    releaseNotesSource: 'inline'
+    assets: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+    changeLogCompareToRelease: 'lastFullRelease'
+    changeLogType: 'commitBased'
