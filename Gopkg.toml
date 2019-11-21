@@ -1,0 +1,11 @@
+[[constraint]]
+  name = "github.com/integrii/flaggy"
+  version = "=1.4.0"
+
+[[constraint]]
+  name = "github.com/sirupsen/logrus"
+  version = "=1.4.2"
+
+[prune]
+  go-tests = true
+  unused-packages = true
