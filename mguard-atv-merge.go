@@ -84,7 +84,7 @@ func parseArgs() arguments {
 		if cmd.IsSubcommandUsed() {
 			err := cmd.ValidateArguments()
 			if err != nil {
-				flaggy.ShowHelpAndExit(fmt.Sprintf("ERROR: %s.", err))
+				flaggy.ShowHelpAndExit(fmt.Sprintf("ERROR: %s", err))
 			}
 		}
 	}
