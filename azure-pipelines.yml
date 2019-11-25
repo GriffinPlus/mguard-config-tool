@@ -61,8 +61,8 @@ steps:
       go build \
         -o "$(Build.ArtifactStagingDirectory)/$GOOS-$GOARCH/mguard-atv-merge${EXTENSION}" \
         -ldflags="-X 'main.buildTime=$(date --rfc-2822)' -X 'main.version=$GITVERSION_SEMVER' -X 'main.fullVersion=$GITVERSION_INFORMATIONALVERSION'" .
-    done <targets.txt
-  workingDirectory: '$(modulePath)'
+    done < ../targets.txt
+  workingDirectory: '$(modulePath)/app'
   displayName: 'Build'
 
 - script: $(Build.ArtifactStagingDirectory)/linux-amd64/mguard-atv-merge || true
