@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/integrii/flaggy"
-	log "github.com/sirupsen/logrus"
 )
 
 type MergeCommand struct {
@@ -47,9 +46,8 @@ func (cmd *MergeCommand) ValidateArguments() error {
 	files := []string{cmd.inFilePath1, cmd.inFilePath2, cmd.mergeInstructionsPath}
 	for _, path := range files {
 		if len(path) > 0 {
-			file, err := os.Open(cmd.inFilePath1)
+			file, err := os.Open(path)
 			if err != nil {
-				log.Errorf("Failed to open file (%s): %s", path, err)
 				return err
 			}
 			file.Close()
