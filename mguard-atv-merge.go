@@ -46,10 +46,10 @@ func parseArgs() arguments {
 	args := arguments{}
 
 	flaggy.ResetParser()
-	flaggy.SetName("Griffin+ mGuard-ATV-Merge v" + version)
+	flaggy.SetName("mguard-atv-merge")
 
 	// add global flags
-	flaggy.Bool(&args.verbose, "", "verbose", "Include additional messages that might help when problems occur")
+	flaggy.Bool(&args.verbose, "", "verbose", "Include additional messages that might help when problems occur.")
 
 	// set version shown when explicitly requesting the version with --version
 	flaggy.SetVersion(version)
@@ -68,6 +68,7 @@ func parseArgs() arguments {
 	flaggy.DefaultParser.ShowHelpWithHFlag = true
 	flaggy.DefaultParser.ShowHelpOnUnexpected = true
 	flaggy.DefaultParser.ShowVersionWithVersionFlag = true
+	flaggy.DefaultParser.SetHelpTemplate(helpTemplate)
 
 	// add subcommands
 	subcommands := []command{}
