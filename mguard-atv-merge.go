@@ -71,7 +71,7 @@ func parseArgs() arguments {
 	flaggy.DefaultParser.SetHelpTemplate(helpTemplate)
 
 	// add subcommands
-	subcommands := []command{}
+	subcommands := []command{NewMergeCommand()}
 	for _, cmd := range subcommands {
 		cmd.AddFlaggySubcommand()
 	}
