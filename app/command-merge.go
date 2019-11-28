@@ -9,7 +9,8 @@ import (
 type MergeCommand struct {
 	inFilePath1           string             // the first file to merge
 	inFilePath2           string             // the second file to merge
-	outFilePath           string             // the file receiving the merged result
+	outAtvFilePath        string             // the file receiving the merged result (ATV format)
+	outEcsFilePath        string             // the file receiving the merged result (ECS container)
 	mergeInstructionsPath string             // a file containing instructions on how to merge the files
 	subcommand            *flaggy.Subcommand // flaggy's subcommand representing the 'merge' subcommand
 }
@@ -26,8 +27,9 @@ func (cmd *MergeCommand) AddFlaggySubcommand() *flaggy.Subcommand {
 	cmd.subcommand.Description = "Merge two mGuard configuration files into one"
 	cmd.subcommand.AddPositionalValue(&cmd.inFilePath1, "1st-file", 1, true, "First mGuard configuration file to merge")
 	cmd.subcommand.AddPositionalValue(&cmd.inFilePath2, "2nd-file", 2, true, "Second mGuard configuration file to merge")
-	cmd.subcommand.AddPositionalValue(&cmd.outFilePath, "out-file", 3, true, "File receiving the merged configuration")
-	cmd.subcommand.String(&cmd.mergeInstructionsPath, "i", "merge-instructions-file", "A file defining how to merge the configurations (see manual).")
+	cmd.subcommand.String(&cmd.outAtvFilePath, "", "out-atv-file", "File receiving the merged configuration (ATV format)")
+	cmd.subcommand.String(&cmd.outEcsFilePath, "", "out-ecs-file", "File receiving the merged configuration (ECS container)")
+	cmd.subcommand.String(&cmd.mergeInstructionsPath, "", "merge-instructions-file", "A file defining how to merge the configurations (see manual).")
 
 	flaggy.AttachSubcommand(cmd.subcommand, 1)
 
