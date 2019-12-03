@@ -59,14 +59,14 @@ steps:
       echo "Building with GOOS=$GOOS and GOARCH=$GOARCH..."
       [[ "$GOOS" = "windows" ]] && EXTENSION=".exe" || EXTENSION=""
       go build \
-        -o "$(Build.ArtifactStagingDirectory)/$GOOS-$GOARCH/mguard-atv-merge${EXTENSION}" \
+        -o "$(Build.ArtifactStagingDirectory)/$GOOS-$GOARCH/mguard-config-tool${EXTENSION}" \
         -ldflags="-X 'main.buildTime=$(date --rfc-2822)' -X 'main.version=$GITVERSION_SEMVER' -X 'main.fullVersion=$GITVERSION_INFORMATIONALVERSION'" .
     done < ../targets.txt
   workingDirectory: '$(modulePath)/app'
   displayName: 'Build'
 
-- script: $(Build.ArtifactStagingDirectory)/linux-amd64/mguard-atv-merge || true
-  displayName: 'Print mguard-atv-merge usage text'
+- script: $(Build.ArtifactStagingDirectory)/linux-amd64/mguard-config-tool || true
+  displayName: 'Print mguard-config-tool usage text'
 
 - task: PublishBuildArtifacts@1
   inputs:
@@ -83,7 +83,7 @@ steps:
       cp LICENSE "$(Build.ArtifactStagingDirectory)/$GOOS-$GOARCH"
       cp THIRD_PARTY_NOTICES "$(Build.ArtifactStagingDirectory)/$GOOS-$GOARCH"
       pushd "$(Build.ArtifactStagingDirectory)/$GOOS-$GOARCH"
-      zip -r "mguard-atv-merge-v$(GitVersion.SemVer)-$GOOS-$GOARCH.zip" .
+      zip -r "mguard-config-tool-v$(GitVersion.SemVer)-$GOOS-$GOARCH.zip" .
       popd
     done <targets.txt
   condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')

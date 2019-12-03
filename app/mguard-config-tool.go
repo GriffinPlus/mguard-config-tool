@@ -46,7 +46,7 @@ func parseArgs() arguments {
 	args := arguments{}
 
 	flaggy.ResetParser()
-	flaggy.SetName("mguard-atv-merge")
+	flaggy.SetName("mguard-config-tool")
 
 	// add global flags
 	flaggy.Bool(&args.verbose, "", "verbose", "Include additional messages that might help when problems occur.")
@@ -60,7 +60,7 @@ func parseArgs() arguments {
 	// add additional text shown after the flags help
 	flaggy.DefaultParser.AdditionalHelpAppend = "\n" +
 		"------------------------------------------------------------------------------------------------------------------------\n" +
-		"Project:      https://github.com/griffinplus/mguard-atv-merge\n" +
+		"Project:      https://github.com/griffinplus/mguard-config-tool\n" +
 		"Full Version: " + fullVersion + "\n" +
 		"Build Time:   " + buildTime + "\n" +
 		"------------------------------------------------------------------------------------------------------------------------"

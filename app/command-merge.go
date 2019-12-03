@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
+	"mguard-config-tool/mguard/atv"
 	"os"
 
 	"github.com/integrii/flaggy"
 )
 
+// MergeCommand represents the 'merge' subcommand.
 type MergeCommand struct {
 	inFilePath1           string             // the first file to merge
 	inFilePath2           string             // the second file to merge
@@ -61,5 +64,21 @@ func (cmd *MergeCommand) ValidateArguments() error {
 
 // Execute performs the actual work of the 'merge' subcommand.
 func (cmd *MergeCommand) Execute() error {
+
+	// open first file
+	atv1, err := atv.DocumentFromFile(cmd.inFilePath1)
+	if err != nil {
+		return err
+	}
+
+	// open second file
+	_, err = atv.DocumentFromFile(cmd.inFilePath2)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("atv1: %s", atv1)
+	//fmt.Printf("atv2: %s", atv2)
+
 	return nil
 }

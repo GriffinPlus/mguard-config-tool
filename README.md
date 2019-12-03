@@ -1,7 +1,7 @@
-# mguard-atv-merge
+# mguard-config-tool
 
-[![Build Status](https://dev.azure.com/griffinplus/mGuard-ATV-Merge/_apis/build/status/mguard-atv-merge?branchName=master)](https://dev.azure.com/griffinplus/mGuard-ATV-Merge/_build/latest?definitionId=16&branchName=master)
-[![Release](https://img.shields.io/github/release/griffinplus/mguard-atv-merge.svg?logo=github)](https://github.com/GriffinPlus/mguard-atv-merge/releases)
+[![Build Status](https://dev.azure.com/griffinplus/mGuard-Config-Tool/_apis/build/status/mguard-config-tool?branchName=master)](https://dev.azure.com/griffinplus/mGuard-Config-Tool/_build/latest?definitionId=16&branchName=master)
+[![Release](https://img.shields.io/github/release/griffinplus/mguard-config-tool.svg?logo=github)](https://github.com/GriffinPlus/mguard-config-tool/releases)
 
 -----
 
@@ -34,7 +34,7 @@ process is configurable, so *mGuard-ATV-Merge* can be used to merge *mGuard* con
 
 *mGuard-ATV-Merge* is written in GO which makes it highly portable.
 
-[Downloads](https://github.com/GriffinPlus/mguard-atv-merge/releases) are provided for the following combinations of
+[Downloads](https://github.com/GriffinPlus/mguard-config-tool/releases) are provided for the following combinations of
 popular target operating systems and platforms:
 
 - Linux
@@ -57,8 +57,8 @@ TODO
 
 As *mGuard-ATV-Merge* is **not** a project of PHOENIX CONTACT, please don't request help for it there!
 
-If you encounter problems using *mGuard-ATV-Merge*, please file an [issue](https://github.com/GriffinPlus/mguard-atv-merge/issues).
+If you encounter problems using *mGuard-ATV-Merge*, please file an [issue](https://github.com/GriffinPlus/mguard-config-tool/issues).
 
-If you have an idea on how to improve *mGuard-ATV-Merge*, please also file an [issue](https://github.com/GriffinPlus/mguard-atv-merge/issues).
+If you have an idea on how to improve *mGuard-ATV-Merge*, please also file an [issue](https://github.com/GriffinPlus/mguard-config-tool/issues).
 Pull requests are also very appreciated. In case of major changes, please open an issue before to discuss the changes.
 This helps to coordinate development and avoids wasting time.
