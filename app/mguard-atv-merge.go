@@ -90,6 +90,7 @@ func parseArgs() arguments {
 	}
 
 	// configure logging
+	log.SetOutput(os.Stderr)
 	if args.verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
