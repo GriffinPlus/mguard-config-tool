@@ -14,7 +14,7 @@ variables:
   GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
   GOROOT: '$(Agent.BuildDirectory)/go' # Go installation path
   GOVERSION: '1.13.3'
-  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+  modulePath: '$(GOPATH)/src/github.com/griffinplus/mguard-config-tool' # Path to the module's code
 
 steps:
 - task: GitVersion@5

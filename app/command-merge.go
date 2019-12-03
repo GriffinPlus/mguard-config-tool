@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"mguard-config-tool/mguard/atv"
 	"os"
 
+	"github.com/griffinplus/mguard-config-tool/mguard/atv"
 	"github.com/integrii/flaggy"
 )
 
