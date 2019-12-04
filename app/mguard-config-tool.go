@@ -29,7 +29,7 @@ type arguments struct {
 func main() {
 
 	// configure logging
-	log.SetOutput(os.Stdout)
+	log.SetOutput(os.Stderr)
 	log.SetLevel(log.WarnLevel)
 	log.SetFormatter(&log.TextFormatter{DisableTimestamp: true, DisableLevelTruncation: true, ForceColors: true})
 
@@ -90,7 +90,6 @@ func parseArgs() arguments {
 	}
 
 	// configure logging
-	log.SetOutput(os.Stderr)
 	if args.verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
