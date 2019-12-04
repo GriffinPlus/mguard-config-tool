@@ -12,6 +12,7 @@ import (
 	"github.com/alecthomas/participle/lexer"
 	"github.com/alecthomas/participle/lexer/ebnf"
 	"github.com/alecthomas/repr"
+	log "github.com/sirupsen/logrus"
 )
 
 var atvLexer = lexer.Must(ebnf.New(`
@@ -162,7 +163,13 @@ func (doc *Document) parse(data string) error {
 		return err
 	}
 
-	repr.Println(root, repr.Indent("  "), repr.OmitEmpty(true))
+	// print the document to the log
+	log.Debugf(
+		"Document Structure:"+
+			"\n--------------------------------------------------------------------------------"+
+			"\n%s"+
+			"\n--------------------------------------------------------------------------------",
+		repr.String(root, repr.Indent("  "), repr.OmitEmpty(true)))
 
 	doc.Root = root
 	return nil
