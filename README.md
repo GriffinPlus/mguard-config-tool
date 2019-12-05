@@ -59,16 +59,14 @@ used for emitting content only.
 
 ### Subcommand: condition
 
-The `condition` subcommand provides access to conditioning and conversion tasks. The task takes a configuration file
+The `condition` subcommand provides access to conditioning and conversion task. The task takes a configuration file
 in ATV format or an ECS container, parses the configuration and saves the configuration to some other ATV file or ECS
 container. If an ATV file is specified and an ATV file is written (`--out-atv-file`), the configuration is conditioned
 only. If an ATV file is specified and an ECS container is written (`--out-ecs-file`), the conditioned ATV file is
 stored in the ECS container and the missing parts in the ECS container are initialized with defaults. The defaults are
-the same that an mGuard comes with after factory reset. If an ECS container is specified and an ATV file is written,
-the configuration stored in the ECS container is simply extracted and saved as an ATV file. If neither `--out-atv-file`
-nor `--out-ecs-file` is specified the configuration is printed in ATV format to *stdout*.
-
-Example:
+the same a new mGuard comes with. If an ECS container is specified and an ATV file is written, the configuration stored
+in the ECS container is simply extracted and saved as an ATV file. If neither `--out-atv-file` nor `--out-ecs-file` is
+specified the configuration is printed in ATV format to *stdout*.
 
 ```
 condition - Condition and/or convert a mGuard configuration file.
