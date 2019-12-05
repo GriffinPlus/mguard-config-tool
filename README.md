@@ -91,6 +91,10 @@ condition - Condition and/or convert a mGuard configuration file.
 
 TODO
 
+## Known Limitations
+
+- Comments: Reading a configuration file discards comments, so a written configuration file does not contain any comments.
+
 ## Issues and Contributions
 
 As *mGuard-Config-Tool* is **not** a project of PHOENIX CONTACT, please don't request help for it there!
