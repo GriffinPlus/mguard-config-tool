@@ -34,9 +34,11 @@ func (node *DocumentNode) WriteDocumentPart(writer *strings.Builder, indent int)
 	}
 
 	for _, child := range children {
-		err := child.WriteDocumentPart(writer, indent)
-		if err != nil {
-			return err
+		if !isNil(child) {
+			err := child.WriteDocumentPart(writer, indent)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

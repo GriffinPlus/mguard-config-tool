@@ -19,10 +19,6 @@ type Setting struct {
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
 func (setting *Setting) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
-	if setting == nil {
-		return nil
-	}
-
 	// write the name of the setting
 	line := fmt.Sprintf("%s%s = ", spacer(indent), setting.Name)
 	_, err := writer.WriteString(line)

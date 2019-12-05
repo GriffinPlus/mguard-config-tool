@@ -15,7 +15,6 @@ type RowRef struct {
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
 func (rowref *RowRef) WriteDocumentPart(writer *strings.Builder, indent int) error {
-
 	line := fmt.Sprintf(
 		"{\n%srowref = \"%s\"\n%s}\n",
 		spacer(indent+1), rowref.RowID, spacer(indent))

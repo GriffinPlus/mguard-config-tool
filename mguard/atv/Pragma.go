@@ -30,9 +30,6 @@ func (pragma *Pragma) Capture(values []string) error {
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
 func (pragma *Pragma) WriteDocumentPart(writer *strings.Builder, indent int) error {
-	if pragma == nil {
-		return nil
-	}
 	line := fmt.Sprintf("%s#%s %s\n", spacer(indent), pragma.Name, pragma.Value)
 	_, err := writer.WriteString(line)
 	return err
