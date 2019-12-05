@@ -55,7 +55,7 @@ func parseArgs() arguments {
 	flaggy.SetVersion(version)
 
 	// add additional text shown before the flags help
-	flaggy.DefaultParser.AdditionalHelpPrepend = "A tool for merging .atv configuration files for the mGuard security router family of the PHOENIX CONTACT Cyber Security AG."
+	flaggy.DefaultParser.AdditionalHelpPrepend = "A tool for handling ATV/ECS configuration files for the mGuard security router family of the PHOENIX CONTACT Cyber Security AG."
 
 	// add additional text shown after the flags help
 	flaggy.DefaultParser.AdditionalHelpAppend = "\n" +
@@ -71,7 +71,10 @@ func parseArgs() arguments {
 	flaggy.DefaultParser.SetHelpTemplate(helpTemplate)
 
 	// add subcommands
-	subcommands := []command{NewMergeCommand()}
+	subcommands := []command{
+		NewConditionCommand(),
+		NewMergeCommand(),
+	}
 	for _, cmd := range subcommands {
 		cmd.AddFlaggySubcommand()
 	}
