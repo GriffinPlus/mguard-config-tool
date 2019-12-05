@@ -68,7 +68,7 @@ func (doc *Document) parse(data string) error {
 		participle.Lexer(lexerDefinition),
 		participle.Unquote("String"),
 		participle.UseLookahead(2),
-		participle.Elide("Whitespace", "EOL"),
+		participle.Elide("Whitespace", "Comment", "EOL"),
 	)
 	if err != nil {
 		return err

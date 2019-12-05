@@ -9,17 +9,13 @@ import (
 // DocumentNode represents an element in an ATV configuration document.
 type DocumentNode struct {
 	Pos     lexer.Position
-	Comment *Comment `( @Comment` // needs extra conditioning step
-	Pragma  *Pragma  `| @Pragma`  // needs extra conditioning step
+	Pragma  *Pragma  `( @Pragma` // needs extra conditioning step
 	Setting *Setting `| @@)`
 }
 
 // actual returns the actual node as DocumentNode itself is a node only encapsulating
 // other nodes without being part of the document.
 func (node *DocumentNode) actual() DocumentWriter {
-	if node.Comment != nil {
-		return node.Comment
-	}
 	if node.Pragma != nil {
 		return node.Pragma
 	}
@@ -33,7 +29,6 @@ func (node *DocumentNode) actual() DocumentWriter {
 func (node *DocumentNode) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
 	children := []DocumentWriter{
-		node.Comment,
 		node.Pragma,
 		node.Setting,
 	}
