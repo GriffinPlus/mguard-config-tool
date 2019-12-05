@@ -96,7 +96,7 @@ func (doc *Document) parse(data string) error {
 func (doc *Document) ToFile(path string) error {
 
 	// open the file for writing
-	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
