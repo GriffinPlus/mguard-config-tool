@@ -73,6 +73,7 @@ func (cmd *ConditionCommand) Execute() error {
 	// write ATV file, if requested
 	if len(cmd.outAtvFilePath) > 0 {
 		fileWritten = true
+		log.Infof("Writing ATV file (%s)...", cmd.outAtvFilePath)
 		err := ecs.Atv.ToFile(cmd.outAtvFilePath)
 		if err != nil {
 			log.Errorf("Writing ATV file (%s) failed: %s", cmd.outAtvFilePath, err)
@@ -83,6 +84,7 @@ func (cmd *ConditionCommand) Execute() error {
 	// write ECS file, if requested
 	if len(cmd.outEcsFilePath) > 0 {
 		fileWritten = true
+		log.Infof("Writing ECS file (%s)...", cmd.outEcsFilePath)
 		err := ecs.ToFile(cmd.outEcsFilePath)
 		if err != nil {
 			log.Errorf("Writing ECS file (%s) failed: %s", cmd.outEcsFilePath, err)

@@ -15,21 +15,22 @@ import (
 // defaults.
 func loadConfigurationFile(path string) (*ecs.Container, error) {
 
-	ext := strings.ToLower(filepath.Ext(path))
+	log.Infof("Trying to load file (%s)...", path)
 
+	ext := strings.ToLower(filepath.Ext(path))
 	var tryOrder []string
 	if ext == ".atv" {
 		// this is probably an ATV file
-		log.Debugf("File (%s) has the extension '%s'. This could be an ATV file.", path, ext)
+		log.Infof("File (%s) has the extension '%s'. This could be an ATV file.", path, ext)
 		tryOrder = []string{"atv", "ecs"}
 	} else if ext == ".tgz" {
 		// this could be an ECS container
-		log.Debugf("File (%s) has the extension '%s'. This could be an ECS file.", path, ext)
+		log.Infof("File (%s) has the extension '%s'. This could be an ECS file.", path, ext)
 		tryOrder = []string{"ecs", "atv"}
 	} else {
 		// cannot give an educated guess
 		// => try both and check whether one works...
-		log.Debugf("File (%s) has the extension '%s'. Cannot guess the configuration file type from the file extension.", path, ext)
+		log.Infof("File (%s) has the extension '%s'. Cannot guess the configuration file type from the file extension.", path, ext)
 		tryOrder = []string{"ecs", "atv"}
 	}
 
@@ -37,24 +38,24 @@ func loadConfigurationFile(path string) (*ecs.Container, error) {
 		switch format {
 
 		case "atv":
-			log.Debugf("Trying to interpret file (%s) as an ATV file...", path)
+			log.Infof("Trying to interpret file (%s) as an ATV file...", path)
 			atv, err := atv.DocumentFromFile(path)
 			if err != nil {
-				log.Debugf("Reading file (%s) failed: %s", path, err)
+				log.Infof("Reading file (%s) failed: %s", path, err)
 				continue
 			}
-			log.Debugf("Reading file (%s) succeeded.", path)
+			log.Infof("Reading file (%s) succeeded.", path)
 			ecs := ecs.ContainerFromATV(atv)
 			return ecs, nil
 
 		case "ecs":
-			log.Debugf("Trying to interpret file (%s) as an ECS file...", path)
+			log.Infof("Trying to interpret file (%s) as an ECS file...", path)
 			ecs, err := ecs.ContainerFromFile(path)
 			if err != nil {
-				log.Debugf("Reading file (%s) failed: %s", path, err)
+				log.Infof("Reading file (%s) failed: %s", path, err)
 				continue
 			}
-			log.Debugf("Reading file (%s) succeeded.", path)
+			log.Infof("Reading file (%s) succeeded.", path)
 			return ecs, nil
 
 		default:
