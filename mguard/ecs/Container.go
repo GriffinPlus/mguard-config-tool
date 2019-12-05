@@ -122,3 +122,23 @@ func ContainerFromReader(reader io.Reader) (*Container, error) {
 	log.Debug("Processing ECS container succeeded.")
 	return container, nil
 }
+
+// ToFile saves the ECS container to the specified file.
+func (doc *Container) ToFile(path string) error {
+
+	// open the file for writing
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// write the ECS containre
+	return doc.ToWriter(file)
+}
+
+// ToWriter writes the ECS container to the specified io.Writer.
+func (doc *Container) ToWriter(writer io.Writer) error {
+	// TODO
+	return nil
+}
