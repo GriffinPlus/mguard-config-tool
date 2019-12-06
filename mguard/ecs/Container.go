@@ -11,12 +11,14 @@ import (
 	"time"
 
 	"github.com/griffinplus/mguard-config-tool/mguard/atv"
+	"github.com/griffinplus/mguard-config-tool/shadow"
 	log "github.com/sirupsen/logrus"
 )
 
 // Container represents a mGuard ECS container.
 type Container struct {
 	Atv       *atv.Document
+	Passwords *shadow.File
 	fileCfg   file
 	filePass  file
 	fileSnmpd file
@@ -33,9 +35,10 @@ func NewContainer() *Container {
 
 	container := Container{
 		Atv:       nil,
+		Passwords: nil,
 		fileCfg:   file{Name: "aca/cfg"},
-		filePass:  file{Name: "aca/pass"},
-		fileSnmpd: file{Name: "aca/snmpd"},
+		filePass:  file{Name: "aca/pass", Data: []byte(DefaultPassFileContent)},
+		fileSnmpd: file{Name: "aca/snmpd", Data: []byte(DefaultSnmpdFileContent)},
 		fileUsers: file{Name: "aca/users"},
 	}
 
@@ -47,7 +50,7 @@ func ContainerFromATV(atv *atv.Document) *Container {
 
 	container := NewContainer()
 	container.Atv = atv
-	// TODO: populate the missing parts with default settings
+	container.Passwords = createDefaultShadowFile()
 	return container
 }
 
@@ -122,7 +125,7 @@ func ContainerFromReader(reader io.Reader) (*Container, error) {
 		return nil, fmt.Errorf("The ECS container does not contain a configuration file at '%s'", container.fileCfg.Name)
 	}
 
-	// parse ATV document stored in the 'aca/cfg' within the ECS container
+	// parse ATV document stored within the ECS container
 	log.Debugf("Parsing configuration file '%s' in ECS container...", container.fileCfg.Name)
 	atv, err := atv.DocumentFromReader(bytes.NewReader(container.fileCfg.Data))
 	if err != nil {
@@ -131,6 +134,22 @@ func ContainerFromReader(reader io.Reader) (*Container, error) {
 	}
 	container.Atv = atv
 	log.Debugf("Parsing configuration file '%s' succeeded.", container.fileCfg.Name)
+
+	// ensure that the container contains the expected password file
+	if len(container.filePass.Data) == 0 {
+		log.Errorf("The ECS container does not contain a password file at '%s'", container.filePass.Name)
+		return nil, fmt.Errorf("The ECS container does not contain a password file at '%s'", container.filePass.Name)
+	}
+
+	// load password file stored within the ECS container
+	log.Debugf("Parsing password file '%s' in ECS container...", container.filePass.Name)
+	passwords, err := shadow.FromReader(bytes.NewReader(container.filePass.Data))
+	if err != nil {
+		log.Debugf("Parsing password file '%s' in ECS container failed: %s", container.fileCfg.Name, err)
+		return nil, err
+	}
+	container.Passwords = passwords
+	log.Debugf("Parsing password file '%s' succeeded.", container.filePass.Name)
 
 	log.Debug("Processing ECS container succeeded.")
 	return container, nil
@@ -199,17 +218,32 @@ func (container *Container) ToWriter(writer io.Writer) error {
 
 func (container *Container) updateFileBuffers() error {
 
-	// update configuration in the container
-	buffer := bytes.Buffer{}
-	err := container.Atv.ToWriter(&buffer)
-	if err != nil {
-		return err
+	// update the configuration in the container
+	if container.Atv != nil {
+		log.Debugf("Updating '%s' in ECS container...", container.fileCfg.Name)
+		buffer := bytes.Buffer{}
+		err := container.Atv.ToWriter(&buffer)
+		if err != nil {
+			return err
+		}
+		container.fileCfg.Data = buffer.Bytes()
 	}
-	container.fileCfg.Data = buffer.Bytes()
+
+	// update the password file in the container
+	if container.Passwords != nil {
+		log.Debugf("Updating '%s' in ECS container...", container.filePass.Name)
+		buffer := bytes.Buffer{}
+		err := container.Passwords.ToWriter(&buffer)
+		if err != nil {
+			return err
+		}
+		container.filePass.Data = buffer.Bytes()
+	}
 
 	return nil
 }
 
+// writeDirectoryToTar writes the specified directory into the tar archive.
 func writeDirectoryToTar(tarWriter *tar.Writer, time time.Time, dirPath string) error {
 
 	header := &tar.Header{
@@ -225,6 +259,7 @@ func writeDirectoryToTar(tarWriter *tar.Writer, time time.Time, dirPath string) 
 	return tarWriter.WriteHeader(header)
 }
 
+// writeFileToTar writes the specified regular file into the tar archive.
 func writeFileToTar(tarWriter *tar.Writer, file file, time time.Time) error {
 
 	header := &tar.Header{
