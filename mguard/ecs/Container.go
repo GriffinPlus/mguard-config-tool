@@ -18,7 +18,7 @@ import (
 // Container represents a mGuard ECS container.
 type Container struct {
 	Atv       *atv.Document
-	Passwords *shadow.File
+	Users     *shadow.File
 	fileCfg   file
 	filePass  file
 	fileSnmpd file
@@ -35,7 +35,7 @@ func NewContainer() *Container {
 
 	container := Container{
 		Atv:       nil,
-		Passwords: nil,
+		Users:     nil,
 		fileCfg:   file{Name: "aca/cfg"},
 		filePass:  file{Name: "aca/pass", Data: []byte(DefaultPassFileContent)},
 		fileSnmpd: file{Name: "aca/snmpd", Data: []byte(DefaultSnmpdFileContent)},
@@ -50,7 +50,7 @@ func ContainerFromATV(atv *atv.Document) *Container {
 
 	container := NewContainer()
 	container.Atv = atv
-	container.Passwords = createDefaultShadowFile()
+	container.Users = createDefaultShadowFile()
 	return container
 }
 
@@ -135,21 +135,21 @@ func ContainerFromReader(reader io.Reader) (*Container, error) {
 	container.Atv = atv
 	log.Debugf("Parsing configuration file '%s' succeeded.", container.fileCfg.Name)
 
-	// ensure that the container contains the expected password file
+	// ensure that the container contains the expected users file
 	if len(container.fileUsers.Data) == 0 {
 		log.Errorf("The ECS container does not contain a password file at '%s'", container.fileUsers.Name)
 		return nil, fmt.Errorf("The ECS container does not contain a password file at '%s'", container.fileUsers.Name)
 	}
 
-	// load password file stored within the ECS container
-	log.Debugf("Parsing password file '%s' in ECS container...", container.fileUsers.Name)
-	passwords, err := shadow.FromReader(bytes.NewReader(container.fileUsers.Data))
+	// load users file stored within the ECS container
+	log.Debugf("Parsing user file '%s' in ECS container...", container.fileUsers.Name)
+	users, err := shadow.FromReader(bytes.NewReader(container.fileUsers.Data))
 	if err != nil {
-		log.Debugf("Parsing password file '%s' in ECS container failed: %s", container.fileCfg.Name, err)
+		log.Debugf("Parsing user file '%s' in ECS container failed: %s", container.fileCfg.Name, err)
 		return nil, err
 	}
-	container.Passwords = passwords
-	log.Debugf("Parsing password file '%s' succeeded.", container.fileUsers.Name)
+	container.Users = users
+	log.Debugf("Parsing user file '%s' succeeded.", container.fileUsers.Name)
 
 	log.Debug("Processing ECS container succeeded.")
 	return container, nil
@@ -229,15 +229,15 @@ func (container *Container) updateFileBuffers() error {
 		container.fileCfg.Data = buffer.Bytes()
 	}
 
-	// update the password file in the container
-	if container.Passwords != nil {
-		log.Debugf("Updating '%s' in ECS container...", container.filePass.Name)
+	// update the user file in the container
+	if container.Users != nil {
+		log.Debugf("Updating '%s' in ECS container...", container.fileUsers.Name)
 		buffer := bytes.Buffer{}
-		err := container.Passwords.ToWriter(&buffer)
+		err := container.Users.ToWriter(&buffer)
 		if err != nil {
 			return err
 		}
-		container.filePass.Data = buffer.Bytes()
+		container.fileUsers.Data = buffer.Bytes()
 	}
 
 	return nil
