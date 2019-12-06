@@ -136,20 +136,20 @@ func ContainerFromReader(reader io.Reader) (*Container, error) {
 	log.Debugf("Parsing configuration file '%s' succeeded.", container.fileCfg.Name)
 
 	// ensure that the container contains the expected password file
-	if len(container.filePass.Data) == 0 {
-		log.Errorf("The ECS container does not contain a password file at '%s'", container.filePass.Name)
-		return nil, fmt.Errorf("The ECS container does not contain a password file at '%s'", container.filePass.Name)
+	if len(container.fileUsers.Data) == 0 {
+		log.Errorf("The ECS container does not contain a password file at '%s'", container.fileUsers.Name)
+		return nil, fmt.Errorf("The ECS container does not contain a password file at '%s'", container.fileUsers.Name)
 	}
 
 	// load password file stored within the ECS container
-	log.Debugf("Parsing password file '%s' in ECS container...", container.filePass.Name)
-	passwords, err := shadow.FromReader(bytes.NewReader(container.filePass.Data))
+	log.Debugf("Parsing password file '%s' in ECS container...", container.fileUsers.Name)
+	passwords, err := shadow.FromReader(bytes.NewReader(container.fileUsers.Data))
 	if err != nil {
 		log.Debugf("Parsing password file '%s' in ECS container failed: %s", container.fileCfg.Name, err)
 		return nil, err
 	}
 	container.Passwords = passwords
-	log.Debugf("Parsing password file '%s' succeeded.", container.filePass.Name)
+	log.Debugf("Parsing password file '%s' succeeded.", container.fileUsers.Name)
 
 	log.Debug("Processing ECS container succeeded.")
 	return container, nil
