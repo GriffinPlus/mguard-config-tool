@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// ConditionCommand represents the 'show' subcommand.
+// ConditionCommand represents the 'condition' subcommand.
 type ConditionCommand struct {
 	inFilePath     string             // the file to process
 	outAtvFilePath string             // the file receiving the conditioned result (ATV format)
@@ -40,7 +40,7 @@ func (cmd *ConditionCommand) IsSubcommandUsed() bool {
 	return cmd.subcommand.Used
 }
 
-// ValidateArguments checks whether the specified arguments for the 'merge' subcommand are valid.
+// ValidateArguments checks whether the specified arguments for the 'condition' subcommand are valid.
 func (cmd *ConditionCommand) ValidateArguments() error {
 
 	// ensure that the specified files exist and are readable
