@@ -88,6 +88,7 @@ func parseArgs() arguments {
 
 	// add subcommands
 	subcommands := []command{
+		NewUserCommand(),
 		NewConditionCommand(),
 		NewMergeCommand(),
 	}

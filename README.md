@@ -29,6 +29,7 @@ The *mGuard-Config-Tool* aims to ease handling *mGuard* configuration files. It'
 
 - Support for ATV files and (unencrypted) ECS containers
 - Tasks
+  - Users Management: Add users and set/verify passwords
   - Conditioning: Condition a configuration and convert formats (ATV <=> ECS)
   - Merging: Merge two configurations into one
 
@@ -56,6 +57,89 @@ issue and we'll add support for it.
 The *mGuard-Config-Tool* is a console application that uses subcommands to run different tasks. The application writes
 log messages to *stderr*, so it's easy to pipe them into a log file or discard them entirely. The *stdout* channel is
 used for emitting content only.
+
+### Subcommand: user
+
+The `user` subcommand provides access to the user management. All operations run on ECS files only, but support an
+implicit conversion if an ATV file is specified. ATV files do not contain information about user accounts and
+passwords. By default the ECS container to work on is expected to be passed via *stdin* to ease scripting without
+generating temporary files. The output of these operations is an ECS container that is written to *stdout*.
+Optionally input and output can be regular files as well by specifying `--ecs-in` and `--ecs-out` appropriately.
+
+```
+user - Add user and set/verify user passwords (ECS containers only).
+
+  Usage:
+        user [add|password]
+
+  Subcommands:
+    add        Add a user.
+    password   Set or verify the password of a user.
+
+  Flags:
+       --version   Displays the program version string.
+    -h --help      Displays help with available flag, subcommand, and positional value parameters.
+       --verbose   Include additional messages that might help when problems occur.
+```
+
+The subcommand `user add` allows to add new users:
+
+```
+add - Add a user.
+
+  Usage:
+        add [username] [password]
+
+  Positional Variables:
+        username   Login name of the user. (Required)
+        password   Password of the user. (Required)
+
+  Flags:
+       --version   Displays the program version string.
+    -h --help      Displays help with available flag, subcommand, and positional value parameters.
+       --ecs-in    The ECS container (instead of stdin).
+       --ecs-out   File receiving the updated ECS container (instead of stdout).
+       --verbose   Include additional messages that might help when problems occur.
+```
+
+The subcommand `user password set` sets the password of a user.
+
+```
+set - Set the password a user (ECS containers only).
+
+  Usage:
+        set [username] [password]
+
+  Positional Variables:
+        username   Login name of the user. (Required)
+        password   Password of the user. (Required)
+
+  Flags:
+       --version   Displays the program version string.
+    -h --help      Displays help with available flag, subcommand, and positional value parameters.
+       --ecs-in    The ECS container (instead of stdin).
+       --ecs-out   File receiving the updated ECS container (instead of stdout).
+       --verbose   Include additional messages that might help when problems occur.
+```
+
+The subcommand `user password verify` verifys the password of a user.
+
+```
+verify - Verify the password of a user (ECS containers only).
+
+  Usage:
+        verify [username] [password]
+
+  Positional Variables:
+        username   Login name of the user. (Required)
+        password   Password of the user. (Required)
+
+  Flags:
+       --version   Displays the program version string.
+    -h --help      Displays help with available flag, subcommand, and positional value parameters.
+       --ecs-in    The ECS container (instead of stdin).
+       --verbose   Include additional messages that might help when problems occur.
+```
 
 ### Subcommand: condition
 
