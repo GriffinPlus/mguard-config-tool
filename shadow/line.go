@@ -100,7 +100,11 @@ func (line *line) VerifyPassword(password string) (bool, error) {
 	c := crypt.NewFromHash(line.Password)
 	err := c.Verify(line.Password, []byte(password))
 	if err != nil {
-		return false, err
+		if err == crypt.ErrKeyMismatch {
+			return false, nil
+		} else {
+			return false, err
+		}
 	}
 
 	return true, nil
