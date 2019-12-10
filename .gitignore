@@ -4,6 +4,10 @@
 *.dll
 *.so
 *.dylib
+__debug_bin
+
+# Visual Studio Code
+launch.json
 
 # Test binary, build with `go test -c`
 *.test
@@ -14,3 +18,7 @@
 # dep specific temporary data
 Gopkg.lock
 vendor/
+
+# test data
+*.tgz
+*.atv
