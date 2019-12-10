@@ -26,6 +26,9 @@ type arguments struct {
 	subcommand command // subcommand specific arguments
 }
 
+// ExitCode represents the exit code the process returns when finishing.
+var ExitCode int = 0
+
 func main() {
 
 	// configure logging
@@ -39,6 +42,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Processing command failed: %s", err)
 	}
+
+	// exit with the specified code
+	log.Infof("Exiting with code %d.", ExitCode)
+	os.Exit(ExitCode)
 }
 
 func parseArgs() arguments {
