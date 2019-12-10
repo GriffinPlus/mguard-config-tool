@@ -7,8 +7,6 @@ import (
 	"strings"
 
 	"github.com/alecthomas/participle"
-	"github.com/alecthomas/repr"
-	log "github.com/sirupsen/logrus"
 )
 
 // DocumentWriter is implemented by ATV document nodes that control how they are persisted.
@@ -80,13 +78,15 @@ func (doc *Document) parse(data string) error {
 		return err
 	}
 
-	// print the document to the log
-	log.Debugf(
-		"Document Structure:"+
-			"\n--------------------------------------------------------------------------------"+
-			"\n%s"+
-			"\n--------------------------------------------------------------------------------",
-		repr.String(root, repr.Indent("  "), repr.OmitEmpty(true)))
+	/*
+		// print the document to the log
+		log.Debugf(
+			"Document Structure:"+
+				"\n--------------------------------------------------------------------------------"+
+				"\n%s"+
+				"\n--------------------------------------------------------------------------------",
+			repr.String(root, repr.Indent("  "), repr.OmitEmpty(true)))
+	*/
 
 	doc.Root = root
 	return nil
