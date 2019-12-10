@@ -143,30 +143,31 @@ verify - Verify the password of a user (ECS containers only).
 
 ### Subcommand: condition
 
-The `condition` subcommand provides access to conditioning and conversion task. The task takes a configuration file
-in ATV format or an ECS container, parses the configuration and saves the configuration to some other ATV file or ECS
-container. If an ATV file is specified and an ATV file is written (`--out-atv-file`), the configuration is conditioned
-only. If an ATV file is specified and an ECS container is written (`--out-ecs-file`), the conditioned ATV file is
-stored in the ECS container and the missing parts in the ECS container are initialized with defaults. The defaults are
-the same a new mGuard comes with. If an ECS container is specified and an ATV file is written, the configuration stored
-in the ECS container is simply extracted and saved as an ATV file. If neither `--out-atv-file` nor `--out-ecs-file` is
-specified the configuration is printed in ATV format to *stdout*.
+The `condition` subcommand provides access to conditioning and conversion. *Conditioning* takes a configuration file,
+parses the configuration and writes the configuration properly formatted. *Conversion* actually conditions a
+configuration and writes it using a different format (ATV or ECS). This way an ATV file that was originally created for
+use with the mGuard web interface can be converted to an ECS file that can be used to configure an mGuard via SDCard
+and vice versa.
+
+By default the ECS container to work on is expected to be passed via *stdin* to ease scripting without generating
+temporary files. The output of the operation is an ECS container that is written to *stdout*. Optionally input and
+output can be regular files as well by specifying `--ecs-in`, `--ecs-out` and `--atv-out` appropriately.
+
+If an ATV file is passed in and an ECS container is written the conditioned ATV file is stored in the ECS container and
+the missing parts in the ECS container are initialized with defaults. The defaults are the same a new mGuard comes with.
+If an ECS container is passwd in and an ATV file is written, the configuration stored in the ECS container is simply
+extracted and saved as an ATV file.
 
 ```
-condition - Condition and/or convert a mGuard configuration file.
+condition - Condition and/or convert a mGuard configuration file
 
-  Usage:
-	condition [file]
-
-  Positional Variables: 
-	file   File containing the mGuard configuration to condition (ATV format or ECS container). (Required)
-
-  Flags: 
-       --version        Displays the program version string.
-    -h --help           Displays help with available flag, subcommand, and positional value parameters.
-       --out-atv-file   File receiving the conditioned configuration (ATV format).
-       --out-ecs-file   File receiving the conditioned configuration (ECS container).
-       --verbose        Include additional messages that might help when problems occur. (default: false)
+  Flags:
+       --version   Displays the program version string.
+    -h --help      Displays help with available flag, subcommand, and positional value parameters.
+       --in        File containing the mGuard configuration to condition (ATV format or ECS container)
+       --atv-out   File receiving the conditioned configuration (ATV format)
+       --ecs-out   File receiving the conditioned configuration (ECS container, instead of stdout)
+       --verbose   Include additional messages that might help when problems occur.
 ```
 
 ### Subcommand: merge

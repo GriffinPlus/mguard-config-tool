@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
 	"os"
 
 	"github.com/integrii/flaggy"
@@ -26,9 +26,9 @@ func (cmd *ConditionCommand) AddFlaggySubcommand() *flaggy.Subcommand {
 
 	cmd.subcommand = flaggy.NewSubcommand("condition")
 	cmd.subcommand.Description = "Condition and/or convert a mGuard configuration file"
-	cmd.subcommand.AddPositionalValue(&cmd.inFilePath, "file", 1, true, "File containing the mGuard configuration to condition (ATV format or ECS container)")
-	cmd.subcommand.String(&cmd.outAtvFilePath, "", "out-atv-file", "File receiving the conditioned configuration (ATV format)")
-	cmd.subcommand.String(&cmd.outEcsFilePath, "", "out-ecs-file", "File receiving the conditioned configuration (ECS container)")
+	cmd.subcommand.String(&cmd.inFilePath, "", "in", "File containing the mGuard configuration to condition (ATV format or ECS container)")
+	cmd.subcommand.String(&cmd.outAtvFilePath, "", "atv-out", "File receiving the conditioned configuration (ATV format)")
+	cmd.subcommand.String(&cmd.outEcsFilePath, "", "ecs-out", "File receiving the conditioned configuration (ECS container, instead of stdout)")
 
 	flaggy.AttachSubcommand(cmd.subcommand, 1)
 
@@ -92,10 +92,15 @@ func (cmd *ConditionCommand) Execute() error {
 		}
 	}
 
-	// print the configuration in ATV format to stdout,
-	// if no output file was specified
+	// write the ECS container to stdout, if no output file was specified
 	if !fileWritten {
-		fmt.Print(ecs.Atv)
+		log.Info("Writing ECS file to stdout...")
+		buffer := bytes.Buffer{}
+		err := ecs.ToWriter(&buffer)
+		if err != nil {
+			return err
+		}
+		os.Stdout.Write(buffer.Bytes())
 	}
 
 	return nil
