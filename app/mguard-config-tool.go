@@ -31,13 +31,22 @@ var ExitCode int = 0
 
 func main() {
 
+	// flaggy.DebugMode = true
+
 	// configure logging
 	log.SetOutput(os.Stderr)
 	log.SetLevel(log.WarnLevel)
 	log.SetFormatter(&log.TextFormatter{DisableTimestamp: true, DisableLevelTruncation: true, ForceColors: true})
 
-	// parse arguments and execute the appropriate handler
+	// parse arguments
 	args := parseArgs()
+
+	// log version information
+	log.Infof("mguard-config-tool (version: %s)", version)
+	log.Debugf("mguard-config-tool (full version: %s)", fullVersion)
+	log.Debugf("mguard-config-tool (build time: %s)", buildTime)
+
+	// execute the appropriate handler
 	err := args.subcommand.Execute()
 	if err != nil {
 		log.Fatalf("Processing command failed: %s", err)
