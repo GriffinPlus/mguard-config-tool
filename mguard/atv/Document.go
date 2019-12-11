@@ -1,6 +1,7 @@
 package atv
 
 import (
+	"bytes"
 	"io"
 	"io/ioutil"
 	"os"
@@ -92,6 +93,25 @@ func (doc *Document) parse(data string) error {
 	return nil
 }
 
+// Dupe returns a copy of the ATV document.
+func (doc *Document) Dupe() *Document {
+
+	buffer := bytes.Buffer{}
+	err := doc.ToWriter(&buffer)
+	if err != nil {
+		// should not occur...
+		panic("Unexpected error when serializing the ATV document")
+	}
+
+	other, err := DocumentFromReader(&buffer)
+	if err != nil {
+		// should not occur...
+		panic("Unexpected error when deserializing the ATV document")
+	}
+
+	return other
+}
+
 // ToFile saves the ATV document to the specified file.
 func (doc *Document) ToFile(path string) error {
 
@@ -118,4 +138,9 @@ func (doc *Document) String() string {
 	var builder strings.Builder
 	doc.Root.WriteDocumentPart(&builder, 0)
 	return builder.String()
+}
+
+// Merge merges the specified ATV document into the current one.
+func (doc *Document) Merge(other *Document) (*Document, error) {
+	return doc, nil
 }
