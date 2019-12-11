@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"os"
 
-	"github.com/griffinplus/mguard-config-tool/mguard/ecs"
-
 	"github.com/integrii/flaggy"
 	log "github.com/sirupsen/logrus"
 )
@@ -79,8 +77,15 @@ func (cmd *MergeCommand) Execute() error {
 		return err
 	}
 
-	// merge the ECS containers
-	mergedEcs, err := mergeEcsContainers(ecs1, ecs2)
+	// merge the configuration stored in both ECS containers
+	mergedAtv, err := ecs1.Atv.Merge(ecs2.Atv)
+	if err != nil {
+		return err
+	}
+
+	// keep first ECS container, but update the configuration
+	mergedEcs := ecs1.Dupe()
+	mergedEcs.Atv = mergedAtv
 	if err != nil {
 		return err
 	}
@@ -120,13 +125,4 @@ func (cmd *MergeCommand) Execute() error {
 	}
 
 	return nil
-}
-
-// mergeEcsContainers merges the specified ECS containers into one.
-// - simple values are overwritten
-// - list values are appended
-func mergeEcsContainers(ecs1, ecs2 *ecs.Container) (*ecs.Container, error) {
-	log.Errorf("Merging is not implemented, yet.")
-	log.Errorf("Merged result equals the first input file!")
-	return ecs1, nil
 }
