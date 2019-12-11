@@ -12,7 +12,7 @@ type Setting struct {
 	Pos         lexer.Position
 	Name        string       `@Ident "="`
 	SimpleValue *SimpleValue `( @@`
-	TableValue  *Table       `| @@`
+	TableValue  *TableValue  `| @@`
 	RowRef      *RowRef      `| @@ )`
 }
 

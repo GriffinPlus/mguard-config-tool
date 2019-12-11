@@ -7,8 +7,8 @@ import (
 	"github.com/alecthomas/participle/lexer"
 )
 
-// Table represents a table node in an ATV document.
-type Table struct {
+// TableValue represents a table value in an ATV document.
+type TableValue struct {
 	Pos  lexer.Position
 	UUID *string     `"{" ( "uuid" "=" @String )?`
 	Rows []*TableRow `@@* "}"`
@@ -22,7 +22,7 @@ type TableRow struct {
 }
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
-func (table *Table) WriteDocumentPart(writer *strings.Builder, indent int) error {
+func (table *TableValue) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
 	// write opening brace for table
 	_, err := writer.WriteString("{\n")
