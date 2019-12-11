@@ -143,7 +143,7 @@ func ContainerFromReader(reader io.Reader) (*Container, error) {
 
 	// load users file stored within the ECS container
 	log.Debugf("Parsing user file '%s' in ECS container...", container.fileUsers.Name)
-	users, err := shadow.FromReader(bytes.NewReader(container.fileUsers.Data))
+	users, err := shadow.FileFromReader(bytes.NewReader(container.fileUsers.Data))
 	if err != nil {
 		log.Debugf("Parsing user file '%s' in ECS container failed: %s", container.fileCfg.Name, err)
 		return nil, err

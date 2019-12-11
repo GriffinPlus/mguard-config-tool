@@ -22,8 +22,8 @@ func NewFile() *File {
 	return &file
 }
 
-// FromReader loads a shadow file from the specified reader.
-func FromReader(reader io.Reader) (*File, error) {
+// FileFromReader loads a shadow file from the specified reader.
+func FileFromReader(reader io.Reader) (*File, error) {
 
 	file := NewFile()
 
@@ -50,7 +50,7 @@ func (file *File) ToWriter(writer io.Writer) error {
 	return err
 }
 
-// AddUser adds a new user to the shadow file
+// AddUser adds a new user to the shadow file.
 func (file *File) AddUser(username string, password string) error {
 
 	// ensure that the user does not exist, yet
@@ -66,7 +66,7 @@ func (file *File) AddUser(username string, password string) error {
 	return nil
 }
 
-// SetPassword sets the password of the specified user
+// SetPassword sets the password of the specified user.
 func (file *File) SetPassword(username string, password string) error {
 
 	for _, line := range file.lines {
@@ -78,7 +78,7 @@ func (file *File) SetPassword(username string, password string) error {
 	return fmt.Errorf("The specified user (%s) does not exist", username)
 }
 
-// VerifyPassword verifys the password of the specified user
+// VerifyPassword verifys the password of the specified user.
 func (file *File) VerifyPassword(username string, password string) (bool, error) {
 
 	for _, line := range file.lines {
