@@ -2,12 +2,14 @@ package atv
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
 
 	"github.com/alecthomas/participle"
+	"github.com/alecthomas/participle/lexer"
 )
 
 // DocumentWriter is implemented by ATV document nodes that control how they are persisted.
@@ -65,7 +67,7 @@ func (doc *Document) parse(data string) error {
 	parser, err := participle.Build(
 		root,
 		participle.Lexer(lexerDefinition),
-		participle.Unquote("String"),
+		UnquoteToken("String"),
 		participle.UseLookahead(2),
 		participle.Elide("Whitespace", "Comment", "EOL"),
 	)
@@ -143,4 +145,70 @@ func (doc *Document) String() string {
 // Merge merges the specified ATV document into the current one.
 func (doc *Document) Merge(other *Document) (*Document, error) {
 	return doc, nil
+}
+
+// UnquoteToken unquotes the specified token.
+func UnquoteToken(types ...string) participle.Option {
+	if len(types) == 0 {
+		types = []string{"String"}
+	}
+	return participle.Map(func(t lexer.Token) (lexer.Token, error) {
+		value, err := unquote(t.Value)
+		if err != nil {
+			return t, lexer.Errorf(t.Pos, "invalid quoted string %q: %s", t.Value, err.Error())
+		}
+		t.Value = value
+		return t, nil
+	}, types...)
+}
+
+// charsToQuote contains characters that are quoted in string in ATV documents.
+const charsToQuote = `"\`
+
+// quote quotes the specified string in the ATV specific fashion.
+func quote(s string) string {
+	quoted := strings.Builder{}
+	quoted.WriteRune('"')
+	for _, c := range s {
+		if strings.ContainsRune(charsToQuote, c) {
+			quoted.WriteRune('\\')
+		}
+		quoted.WriteRune(c)
+	}
+	quoted.WriteRune('"')
+	return quoted.String()
+}
+
+// unquote unquotes the specified string in the ATV specific fashion.
+func unquote(s string) (string, error) {
+
+	// check whether the string contains the expected embracing quotes
+	if len(s) < 2 || s[0] != '"' || s[len(s)-1] != '"' {
+		return "", fmt.Errorf("String is not properly quoted")
+	}
+
+	// strip embracing quotes
+	s = s[1 : len(s)-1]
+
+	unquoted := strings.Builder{}
+	unquotePending := false
+	for _, c := range s {
+		if !unquotePending && c == '\\' {
+			unquotePending = true
+			continue
+		}
+
+		if unquotePending && !strings.ContainsRune(charsToQuote, c) {
+			unquoted.WriteRune('\\')
+		}
+
+		unquoted.WriteRune(c)
+		unquotePending = false
+	}
+
+	if unquotePending {
+		return "", fmt.Errorf("Unpaired backslash found when unquoting string (%s)", s)
+	}
+
+	return unquoted.String(), nil
 }
