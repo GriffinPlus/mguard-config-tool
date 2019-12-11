@@ -170,7 +170,7 @@ condition - Condition and/or convert a mGuard configuration file
        --version   Displays the program version string.
     -h --help      Displays help with available flag, subcommand, and positional value parameters.
        --in        File containing the mGuard configuration to condition (ATV format or ECS container)
-       --atv-out   File receiving the conditioned configuration (ATV format)
+       --atv-out   File receiving the conditioned configuration (ATV format, instead of stdout)
        --ecs-out   File receiving the conditioned configuration (ECS container, instead of stdout)
        --verbose   Include additional messages that might help when problems occur.
 ```
@@ -178,7 +178,7 @@ condition - Condition and/or convert a mGuard configuration file
 ### Subcommand: merge
 
 The `merge` subcommand merges two configuration files into one. The first specified file is taken as the base for the
-result, then the configuration stored in the second file "stacked" upon the first configuration. Simple values and
+result, then the configuration stored in the second file is "stacked" upon the first configuration. Simple values and
 complex values are overwritten and table values (lists) are merged by appending all rows in a table in the second
 configuration to the corresponding table in the first configuration. If the first file is an ATV file, it is implicitly
 converted to an ECS file first. Therefore the resulting ECS container contains default settings for all elements except
@@ -202,7 +202,7 @@ merge - Merge two mGuard configuration files into one
   Flags: 
        --version   Displays the program version string.
     -h --help      Displays help with available flag, subcommand, and positional value parameters.
-       --atv-out   File receiving the merged configuration (ATV format)
+       --atv-out   File receiving the merged configuration (ATV format, instead of stdout)
        --ecs-out   File receiving the merged configuration (ECS container, instead of stdout)
        --verbose   Include additional messages that might help when problems occur.
 ```

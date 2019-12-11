@@ -29,7 +29,7 @@ func (cmd *MergeCommand) AddFlaggySubcommand() *flaggy.Subcommand {
 	cmd.subcommand.Description = "Merge two mGuard configuration files into one"
 	cmd.subcommand.AddPositionalValue(&cmd.inFilePath1, "1st-file", 1, true, "First configuration file to merge")
 	cmd.subcommand.AddPositionalValue(&cmd.inFilePath2, "2nd-file", 2, true, "Second configuration file to merge")
-	cmd.subcommand.String(&cmd.outAtvFilePath, "", "atv-out", "File receiving the merged configuration (ATV format)")
+	cmd.subcommand.String(&cmd.outAtvFilePath, "", "atv-out", "File receiving the merged configuration (ATV format, instead of stdout)")
 	cmd.subcommand.String(&cmd.outEcsFilePath, "", "ecs-out", "File receiving the merged configuration (ECS container, instead of stdout)")
 
 	flaggy.AttachSubcommand(cmd.subcommand, 1)

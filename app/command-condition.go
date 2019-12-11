@@ -27,7 +27,7 @@ func (cmd *ConditionCommand) AddFlaggySubcommand() *flaggy.Subcommand {
 	cmd.subcommand = flaggy.NewSubcommand("condition")
 	cmd.subcommand.Description = "Condition and/or convert a mGuard configuration file"
 	cmd.subcommand.String(&cmd.inFilePath, "", "in", "File containing the mGuard configuration to condition (ATV format or ECS container)")
-	cmd.subcommand.String(&cmd.outAtvFilePath, "", "atv-out", "File receiving the conditioned configuration (ATV format)")
+	cmd.subcommand.String(&cmd.outAtvFilePath, "", "atv-out", "File receiving the conditioned configuration (ATV format, instead of stdout)")
 	cmd.subcommand.String(&cmd.outEcsFilePath, "", "ecs-out", "File receiving the conditioned configuration (ECS container, instead of stdout)")
 
 	flaggy.AttachSubcommand(cmd.subcommand, 1)
