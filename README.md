@@ -29,7 +29,7 @@ The *mGuard-Config-Tool* aims to ease handling *mGuard* configuration files. It'
 
 - Support for ATV files and (unencrypted) ECS containers
 - Tasks
-  - Users Management: Add users and set/verify passwords
+  - User Management: Add users and set/verify passwords
   - Conditioning: Condition a configuration and convert formats (ATV <=> ECS)
   - Merging: Merge two configurations into one
 
@@ -122,7 +122,12 @@ set - Set the password a user (ECS containers only).
        --verbose   Include additional messages that might help when problems occur.
 ```
 
-The subcommand `user password verify` verifys the password of a user.
+The subcommand `user password verify` verifys the password of a user. Depending on the outcome of the verification the
+exit code can be one of the following:
+
+- 0 : The specified password is correct.
+- 1 : The specified password is not correct.
+- any other : An error occurred.
 
 ```
 verify - Verify the password of a user (ECS containers only).
