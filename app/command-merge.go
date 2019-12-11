@@ -1,11 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
 	"os"
 
-	"github.com/griffinplus/mguard-config-tool/mguard/atv"
+	"github.com/griffinplus/mguard-config-tool/mguard/ecs"
+
 	"github.com/integrii/flaggy"
+	log "github.com/sirupsen/logrus"
 )
 
 // MergeCommand represents the 'merge' subcommand.
@@ -30,7 +32,7 @@ func (cmd *MergeCommand) AddFlaggySubcommand() *flaggy.Subcommand {
 	cmd.subcommand.AddPositionalValue(&cmd.inFilePath1, "1st-file", 1, true, "First configuration file to merge")
 	cmd.subcommand.AddPositionalValue(&cmd.inFilePath2, "2nd-file", 2, true, "Second configuration file to merge")
 	cmd.subcommand.String(&cmd.outAtvFilePath, "", "atv-out", "File receiving the merged configuration (ATV format)")
-	cmd.subcommand.String(&cmd.outEcsFilePath, "", "ecs-out", "File receiving the merged configuration (ECS container)")
+	cmd.subcommand.String(&cmd.outEcsFilePath, "", "ecs-out", "File receiving the merged configuration (ECS container, instead of stdout)")
 
 	flaggy.AttachSubcommand(cmd.subcommand, 1)
 
@@ -63,20 +65,68 @@ func (cmd *MergeCommand) ValidateArguments() error {
 // Execute performs the actual work of the 'merge' subcommand.
 func (cmd *MergeCommand) Execute() error {
 
-	// open first file
-	atv1, err := atv.DocumentFromFile(cmd.inFilePath1)
+	// load the first file (can be ATV or ECS)
+	// (the configuration is always loaded into an ECS container, missing parts are filled with defaults)
+	ecs1, err := loadConfigurationFile(cmd.inFilePath1)
 	if err != nil {
 		return err
 	}
 
-	// open second file
-	_, err = atv.DocumentFromFile(cmd.inFilePath2)
+	// load the second file (can be ATV or ECS)
+	// (the configuration is always loaded into an ECS container, missing parts are filled with defaults)
+	ecs2, err := loadConfigurationFile(cmd.inFilePath2)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("atv1: %s", atv1)
-	//fmt.Printf("atv2: %s", atv2)
+	// merge the ECS containers
+	mergedEcs, err := mergeEcsContainers(ecs1, ecs2)
+	if err != nil {
+		return err
+	}
+
+	// write ATV file, if requested
+	fileWritten := false
+	if len(cmd.outAtvFilePath) > 0 {
+		fileWritten = true
+		log.Infof("Writing ATV file (%s)...", cmd.outAtvFilePath)
+		err := mergedEcs.Atv.ToFile(cmd.outAtvFilePath)
+		if err != nil {
+			log.Errorf("Writing ATV file (%s) failed: %s", cmd.outAtvFilePath, err)
+			return err
+		}
+	}
+
+	// write ECS file, if requested
+	if len(cmd.outEcsFilePath) > 0 {
+		fileWritten = true
+		log.Infof("Writing ECS file (%s)...", cmd.outEcsFilePath)
+		err := mergedEcs.ToFile(cmd.outEcsFilePath)
+		if err != nil {
+			log.Errorf("Writing ECS file (%s) failed: %s", cmd.outEcsFilePath, err)
+			return err
+		}
+	}
+
+	// write the ECS container to stdout, if no output file was specified
+	if !fileWritten {
+		log.Info("Writing ECS file to stdout...")
+		buffer := bytes.Buffer{}
+		err := mergedEcs.ToWriter(&buffer)
+		if err != nil {
+			return err
+		}
+		os.Stdout.Write(buffer.Bytes())
+	}
 
 	return nil
+}
+
+// mergeEcsContainers merges the specified ECS containers into one.
+// - simple values are overwritten
+// - list values are appended
+func mergeEcsContainers(ecs1, ecs2 *ecs.Container) (*ecs.Container, error) {
+	log.Errorf("Merging is not implemented, yet.")
+	log.Errorf("Merged result equals the first input file!")
+	return ecs1, nil
 }
