@@ -2,6 +2,7 @@ package shadow
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"strings"
@@ -48,6 +49,25 @@ func FileFromReader(reader io.Reader) (*File, error) {
 func (file *File) ToWriter(writer io.Writer) error {
 	_, err := writer.Write([]byte(file.String()))
 	return err
+}
+
+// Dupe returns a copy of the shadow file.
+func (file *File) Dupe() *File {
+
+	buffer := bytes.Buffer{}
+	err := file.ToWriter(&buffer)
+	if err != nil {
+		// should not occur...
+		panic("Unexpected error when serializing the shadow file")
+	}
+
+	other, err := FileFromReader(&buffer)
+	if err != nil {
+		// should not occur...
+		panic("Unexpected error when deserializing the shadow file")
+	}
+
+	return other
 }
 
 // AddUser adds a new user to the shadow file.
