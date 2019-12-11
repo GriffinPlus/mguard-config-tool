@@ -155,6 +155,21 @@ func ContainerFromReader(reader io.Reader) (*Container, error) {
 	return container, nil
 }
 
+// Dupe returns a copy of the ECS container.
+func (container *Container) Dupe() *Container {
+
+	copy := Container{
+		Atv:       container.Atv.Dupe(),
+		Users:     container.Users.Dupe(),
+		fileCfg:   container.fileCfg,
+		filePass:  container.filePass,
+		fileSnmpd: container.fileSnmpd,
+		fileUsers: container.fileUsers,
+	}
+
+	return &copy
+}
+
 // ToFile saves the ECS container to the specified file.
 func (container *Container) ToFile(path string) error {
 
