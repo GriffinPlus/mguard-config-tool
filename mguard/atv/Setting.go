@@ -9,11 +9,12 @@ import (
 
 // Setting represents a setting node in an ATV document.
 type Setting struct {
-	Pos         lexer.Position
-	Name        string       `@Ident "="`
-	SimpleValue *SimpleValue `( @@`
-	TableValue  *TableValue  `| @@`
-	RowRef      *RowRef      `| @@ )`
+	Pos          lexer.Position
+	Name         string        `@Ident "="`
+	SimpleValue  *SimpleValue  `( @@`
+	TableValue   *TableValue   `| @@`
+	RowRef       *RowRef       `| @@`
+	ComplexValue *ComplexValue `| @@ )`
 }
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
@@ -27,7 +28,7 @@ func (setting *Setting) WriteDocumentPart(writer *strings.Builder, indent int) e
 	}
 
 	// write the setting value
-	parts := []DocumentWriter{setting.SimpleValue, setting.TableValue, setting.RowRef}
+	parts := []DocumentWriter{setting.SimpleValue, setting.ComplexValue, setting.RowRef, setting.TableValue}
 	for _, part := range parts {
 
 		if !isNil(part) {
