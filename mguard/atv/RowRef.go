@@ -13,6 +13,11 @@ type RowRef struct {
 	RowID string `"{" "rowref" "=" @String "}"`
 }
 
+// Dupe returns a copy of the value.
+func (value *RowRef) Dupe() *RowRef {
+	return &RowRef{RowID: value.RowID}
+}
+
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
 func (rowref *RowRef) WriteDocumentPart(writer *strings.Builder, indent int) error {
 	line := fmt.Sprintf(

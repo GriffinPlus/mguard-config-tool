@@ -14,6 +14,20 @@ type ComplexValue struct {
 	Items []*Setting `@@* "}"`
 }
 
+// Dupe returns a copy of the value.
+func (value *ComplexValue) Dupe() *ComplexValue {
+
+	var itemsCopy []*Setting
+	for _, setting := range value.Items {
+		itemsCopy = append(itemsCopy, setting.Dupe())
+	}
+
+	return &ComplexValue{
+		UUID:  value.UUID,
+		Items: itemsCopy,
+	}
+}
+
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
 func (complex *ComplexValue) WriteDocumentPart(writer *strings.Builder, indent int) error {
 

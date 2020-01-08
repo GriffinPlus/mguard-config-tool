@@ -21,6 +21,34 @@ type TableRow struct {
 	Items []*Setting `@@* "}"`
 }
 
+// Dupe returns a deep copy of the table value.
+func (value *TableValue) Dupe() *TableValue {
+
+	var rowsCopy []*TableRow
+	for _, row := range value.Rows {
+		rowsCopy = append(rowsCopy, row.Dupe())
+	}
+
+	return &TableValue{
+		UUID: value.UUID,
+		Rows: rowsCopy,
+	}
+}
+
+// Dupe returns a deep copy of the table row.
+func (value *TableRow) Dupe() *TableRow {
+
+	var itemsCopy []*Setting
+	for _, setting := range value.Items {
+		itemsCopy = append(itemsCopy, setting.Dupe())
+	}
+
+	return &TableRow{
+		RowID: value.RowID,
+		Items: itemsCopy,
+	}
+}
+
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
 func (table *TableValue) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
