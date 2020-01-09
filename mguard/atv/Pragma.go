@@ -15,6 +15,19 @@ type Pragma struct {
 	Value string
 }
 
+// Dupe returns a copy of the document node.
+func (pragma *Pragma) Dupe() *Pragma {
+
+	if pragma == nil {
+		return nil
+	}
+
+	return &Pragma{
+		Name:  pragma.Name,
+		Value: pragma.Value,
+	}
+}
+
 var pragmaSplitterRegex = regexp.MustCompile(`#(\w+)(?:\s+(.*))?$`)
 
 // Capture initializes the pragma object when the parser encounters a pragma token in an ATV document.

@@ -13,15 +13,51 @@ type DocumentNode struct {
 	Setting *Setting `| @@)`
 }
 
+// Dupe returns a copy of the document node.
+func (node *DocumentNode) Dupe() *DocumentNode {
+
+	if node == nil {
+		return nil
+	}
+
+	return &DocumentNode{
+		Pragma:  node.Pragma.Dupe(),
+		Setting: node.Setting.Dupe(),
+	}
+}
+
+// GetRowReferences returns all row references recursively.
+func (node *DocumentNode) GetRowReferences() []*RowRef {
+
+	if node == nil {
+		return nil
+	}
+
+	return node.Setting.GetRowReferences()
+}
+
+// GetRowIDs returns all row ids recursively.
+func (node *DocumentNode) GetRowIDs() []RowID {
+
+	if node == nil {
+		return []RowID{}
+	}
+
+	return node.Setting.GetRowIDs()
+}
+
 // actual returns the actual node as DocumentNode itself is a node only encapsulating
 // other nodes without being part of the document.
 func (node *DocumentNode) actual() DocumentWriter {
+
 	if node.Pragma != nil {
 		return node.Pragma
 	}
+
 	if node.Setting != nil {
 		return node.Setting
 	}
+	
 	panic("Unhandled node type")
 }
 

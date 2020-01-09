@@ -17,6 +17,10 @@ type ComplexValue struct {
 // Dupe returns a copy of the value.
 func (value *ComplexValue) Dupe() *ComplexValue {
 
+	if value == nil {
+		return nil
+	}
+
 	var itemsCopy []*Setting
 	for _, setting := range value.Items {
 		itemsCopy = append(itemsCopy, setting.Dupe())
@@ -28,8 +32,38 @@ func (value *ComplexValue) Dupe() *ComplexValue {
 	}
 }
 
+// GetRowReferences returns all row references recursively.
+func (value *ComplexValue) GetRowReferences() []*RowRef {
+
+	if value == nil {
+		return []*RowRef{}
+	}
+
+	var allRowRefs []*RowRef
+	for _, item := range value.Items {
+		allRowRefs = append(allRowRefs, item.GetRowReferences()...)
+	}
+
+	return allRowRefs
+}
+
+// GetRowIDs returns all row ids recursively.
+func (value *ComplexValue) GetRowIDs() []RowID {
+
+	if value == nil {
+		return []RowID{}
+	}
+
+	var allRowIDs []RowID
+	for _, item := range value.Items {
+		allRowIDs = append(allRowIDs, item.GetRowIDs()...)
+	}
+
+	return allRowIDs
+}
+
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
-func (complex *ComplexValue) WriteDocumentPart(writer *strings.Builder, indent int) error {
+func (value *ComplexValue) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
 	// write opening brace of the complex type
 	_, err := writer.WriteString("{\n")
@@ -38,8 +72,8 @@ func (complex *ComplexValue) WriteDocumentPart(writer *strings.Builder, indent i
 	}
 
 	// write UUID of the setting, if available
-	if complex.UUID != nil {
-		line := fmt.Sprintf("%suuid = \"%s\"\n", spacer(indent+1), *complex.UUID)
+	if value.UUID != nil {
+		line := fmt.Sprintf("%suuid = \"%s\"\n", spacer(indent+1), *value.UUID)
 		_, err := writer.WriteString(line)
 		if err != nil {
 			return err
@@ -47,7 +81,7 @@ func (complex *ComplexValue) WriteDocumentPart(writer *strings.Builder, indent i
 	}
 
 	// write settings
-	for _, item := range complex.Items {
+	for _, item := range value.Items {
 		err = item.WriteDocumentPart(writer, indent+1)
 		if err != nil {
 			return err
@@ -62,4 +96,11 @@ func (complex *ComplexValue) WriteDocumentPart(writer *strings.Builder, indent i
 	}
 
 	return err
+}
+
+// String returns the complex value as a string.
+func (value *ComplexValue) String() string {
+	builder := strings.Builder{}
+	value.WriteDocumentPart(&builder, 0)
+	return strings.TrimSuffix(builder.String(), "\n")
 }

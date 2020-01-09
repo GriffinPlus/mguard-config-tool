@@ -13,6 +13,52 @@ type DocumentRoot struct {
 	Nodes []*DocumentNode `( @@ )*`
 }
 
+// Dupe returns a copy of the document root.
+func (root *DocumentRoot) Dupe() *DocumentRoot {
+
+	if root == nil {
+		return nil
+	}
+
+	var nodesCopy []*DocumentNode
+	for _, node := range root.Nodes {
+		nodesCopy = append(nodesCopy, node.Dupe())
+	}
+
+	return &DocumentRoot{
+		Nodes: nodesCopy,
+	}
+}
+
+// GetRowReferences returns all row references recursively.
+func (root *DocumentRoot) GetRowReferences() []*RowRef {
+
+	if root == nil {
+		return []*RowRef{}
+	}
+
+	var allRowRefs []*RowRef
+	for _, node := range root.Nodes {
+		allRowRefs = append(allRowRefs, node.GetRowReferences()...)
+	}
+	return allRowRefs
+}
+
+// GetRowIDs returns all row ids recursively.
+func (root *DocumentRoot) GetRowIDs() []RowID {
+
+	if root == nil {
+		return []RowID{}
+	}
+
+	var allRowIDs []RowID
+	for _, node := range root.Nodes {
+		allRowIDs = append(allRowIDs, node.GetRowIDs()...)
+	}
+
+	return allRowIDs
+}
+
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
 func (root *DocumentRoot) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
