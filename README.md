@@ -187,8 +187,6 @@ the encorporated mGuard configuration (`/aca/cfg`).
 By default the output of the operation is an ECS container that is written to *stdout*. The output can be written to
 a regular file as well by specifying `--ecs-out` and `--atv-out` appropriately.
 
-**STATUS: not working, yet - the result is the first file specified**
-
 ```
 merge - Merge two mGuard configuration files into one
 
