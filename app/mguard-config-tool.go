@@ -91,6 +91,7 @@ func parseArgs() arguments {
 		NewUserCommand(),
 		NewConditionCommand(),
 		NewMergeCommand(),
+		NewServiceCommand(),
 	}
 	for _, cmd := range subcommands {
 		cmd.AddFlaggySubcommand()
