@@ -106,8 +106,8 @@ func (cmd *UserCommand) ValidateArguments() error {
 	return nil
 }
 
-// Execute performs the actual work of the 'user' subcommand.
-func (cmd *UserCommand) Execute() error {
+// ExecuteCommand performs the actual work of the 'user' subcommand.
+func (cmd *UserCommand) ExecuteCommand() error {
 
 	// load configuration file (can be ATV or ECS)
 	// (the configuration is always loaded into an ECS container, missing parts are filled with defaults)

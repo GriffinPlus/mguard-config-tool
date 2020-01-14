@@ -58,8 +58,8 @@ func (cmd *ConditionCommand) ValidateArguments() error {
 	return nil
 }
 
-// Execute performs the actual work of the 'condition' subcommand.
-func (cmd *ConditionCommand) Execute() error {
+// ExecuteCommand performs the actual work of the 'condition' subcommand.
+func (cmd *ConditionCommand) ExecuteCommand() error {
 
 	fileWritten := false
 

@@ -62,7 +62,7 @@ func (cmd *ServiceCommand) ValidateArguments() error {
 	return nil
 }
 
-// Execute performs the actual work of the 'service' subcommand.
-func (cmd *ServiceCommand) Execute() error {
+// ExecuteCommand performs the actual work of the 'service' subcommand.
+func (cmd *ServiceCommand) ExecuteCommand() error {
 	return nil
 }

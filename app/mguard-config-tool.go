@@ -18,7 +18,7 @@ type command interface {
 	AddFlaggySubcommand() *flaggy.Subcommand // Adds the subcommand specific settings to flaggy.
 	IsSubcommandUsed() bool                  // Determines whether the subcommand was used in the command line.
 	ValidateArguments() error                // Validates parsed arguments after parsing has completed.
-	Execute() error                          // Executes the command.
+	ExecuteCommand() error                   // Executes the command.
 }
 
 type arguments struct {
@@ -47,7 +47,7 @@ func main() {
 	log.Debugf("mguard-config-tool (build time: %s)", buildTime)
 
 	// execute the appropriate handler
-	err := args.subcommand.Execute()
+	err := args.subcommand.ExecuteCommand()
 	if err != nil {
 		log.Fatalf("Processing command failed: %s", err)
 	}

@@ -60,8 +60,8 @@ func (cmd *MergeCommand) ValidateArguments() error {
 	return nil
 }
 
-// Execute performs the actual work of the 'merge' subcommand.
-func (cmd *MergeCommand) Execute() error {
+// ExecuteCommand performs the actual work of the 'merge' subcommand.
+func (cmd *MergeCommand) ExecuteCommand() error {
 
 	// load the first file (can be ATV or ECS)
 	// (the configuration is always loaded into an ECS container, missing parts are filled with defaults)
