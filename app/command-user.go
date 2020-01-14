@@ -33,30 +33,30 @@ func NewUserCommand() *UserCommand {
 func (cmd *UserCommand) AddFlaggySubcommand() *flaggy.Subcommand {
 
 	cmd.subcommand = flaggy.NewSubcommand("user")
-	cmd.subcommand.Description = "Add user and set/verify user passwords (ECS containers only)."
+	cmd.subcommand.Description = "Add user and set/verify user passwords (ECS containers only)"
 
 	cmd.addSubcommand = flaggy.NewSubcommand("add")
 	cmd.addSubcommand.Description = "Add a user."
-	cmd.addSubcommand.AddPositionalValue(&cmd.username, "username", 1, true, "Login name of the user.")
-	cmd.addSubcommand.AddPositionalValue(&cmd.password, "password", 2, true, "Password of the user.")
-	cmd.addSubcommand.String(&cmd.inFilePath, "", "ecs-in", "The ECS container (instead of stdin).")
-	cmd.addSubcommand.String(&cmd.outFilePath, "", "ecs-out", "File receiving the updated ECS container (instead of stdout).")
+	cmd.addSubcommand.AddPositionalValue(&cmd.username, "username", 1, true, "Login name of the user")
+	cmd.addSubcommand.AddPositionalValue(&cmd.password, "password", 2, true, "Password of the user")
+	cmd.addSubcommand.String(&cmd.inFilePath, "", "ecs-in", "The ECS container (instead of stdin)")
+	cmd.addSubcommand.String(&cmd.outFilePath, "", "ecs-out", "File receiving the updated ECS container (instead of stdout)")
 
 	cmd.passwordSubcommand = flaggy.NewSubcommand("password")
-	cmd.passwordSubcommand.Description = "Set or verify the password of a user."
+	cmd.passwordSubcommand.Description = "Set or verify the password of a user"
 
 	cmd.passwordSetSubcommand = flaggy.NewSubcommand("set")
-	cmd.passwordSetSubcommand.Description = "Set the password a user (ECS containers only)."
-	cmd.passwordSetSubcommand.AddPositionalValue(&cmd.username, "username", 1, true, "Login name of the user.")
-	cmd.passwordSetSubcommand.AddPositionalValue(&cmd.password, "password", 2, true, "Password of the user.")
-	cmd.passwordSetSubcommand.String(&cmd.inFilePath, "", "ecs-in", "The ECS container (instead of stdin).")
-	cmd.passwordSetSubcommand.String(&cmd.outFilePath, "", "ecs-out", "File receiving the updated ECS container (instead of stdout).")
+	cmd.passwordSetSubcommand.Description = "Set the password a user (ECS containers only)"
+	cmd.passwordSetSubcommand.AddPositionalValue(&cmd.username, "username", 1, true, "Login name of the user")
+	cmd.passwordSetSubcommand.AddPositionalValue(&cmd.password, "password", 2, true, "Password of the user")
+	cmd.passwordSetSubcommand.String(&cmd.inFilePath, "", "ecs-in", "The ECS container (instead of stdin)")
+	cmd.passwordSetSubcommand.String(&cmd.outFilePath, "", "ecs-out", "File receiving the updated ECS container (instead of stdout)")
 
 	cmd.passwordVerifySubcommand = flaggy.NewSubcommand("verify")
-	cmd.passwordVerifySubcommand.Description = "Verify the password of a user (ECS containers only)."
-	cmd.passwordVerifySubcommand.AddPositionalValue(&cmd.username, "username", 1, true, "Login name of the user.")
-	cmd.passwordVerifySubcommand.AddPositionalValue(&cmd.password, "password", 2, true, "Password of the user.")
-	cmd.passwordVerifySubcommand.String(&cmd.inFilePath, "", "ecs-in", "The ECS container (instead of stdin).")
+	cmd.passwordVerifySubcommand.Description = "Verify the password of a user (ECS containers only)"
+	cmd.passwordVerifySubcommand.AddPositionalValue(&cmd.username, "username", 1, true, "Login name of the user")
+	cmd.passwordVerifySubcommand.AddPositionalValue(&cmd.password, "password", 2, true, "Password of the user")
+	cmd.passwordVerifySubcommand.String(&cmd.inFilePath, "", "ecs-in", "The ECS container (instead of stdin)")
 
 	// attach subcommands to flaggy
 	cmd.subcommand.AttachSubcommand(cmd.addSubcommand, 1)

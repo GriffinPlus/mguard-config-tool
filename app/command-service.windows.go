@@ -25,22 +25,22 @@ func NewServiceCommand() *ServiceCommand {
 func (cmd *ServiceCommand) AddFlaggySubcommand() *flaggy.Subcommand {
 
 	cmd.subcommand = flaggy.NewSubcommand("service")
-	cmd.subcommand.Description = "Controls the mGuard configuration merging service."
+	cmd.subcommand.Description = "Controls the mGuard configuration merging service"
 
 	cmd.installSubcommand = flaggy.NewSubcommand("install")
-	cmd.installSubcommand.Description = "Install the windows service."
+	cmd.installSubcommand.Description = "Install the windows service"
 
 	cmd.uninstallSubcommand = flaggy.NewSubcommand("uninstall")
-	cmd.uninstallSubcommand.Description = "Uninstall the windows service."
+	cmd.uninstallSubcommand.Description = "Uninstall the windows service"
 
 	cmd.startSubcommand = flaggy.NewSubcommand("start")
-	cmd.startSubcommand.Description = "Start the installed windows service."
+	cmd.startSubcommand.Description = "Start the installed windows service"
 
 	cmd.stopSubcommand = flaggy.NewSubcommand("stop")
-	cmd.stopSubcommand.Description = "Stop the installed windows service."
+	cmd.stopSubcommand.Description = "Stop the installed windows service"
 
 	cmd.debugSubcommand = flaggy.NewSubcommand("debug")
-	cmd.debugSubcommand.Description = "Run as a command line application for debugging purposes."
+	cmd.debugSubcommand.Description = "Run as a command line application for debugging purposes"
 
 	cmd.subcommand.AttachSubcommand(cmd.installSubcommand, 1)
 	cmd.subcommand.AttachSubcommand(cmd.uninstallSubcommand, 1)
