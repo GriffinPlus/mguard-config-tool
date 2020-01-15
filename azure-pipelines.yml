@@ -65,7 +65,11 @@ steps:
   workingDirectory: '$(modulePath)/app'
   displayName: 'Build'
 
-- script: $(Build.ArtifactStagingDirectory)/linux-amd64/mguard-config-tool || true
+- script: |
+    $(Build.ArtifactStagingDirectory)/linux-amd64/mguard-config-tool --help || true
+    $(Build.ArtifactStagingDirectory)/linux-amd64/mguard-config-tool user --help || true
+    $(Build.ArtifactStagingDirectory)/linux-amd64/mguard-config-tool condition --help || true
+    $(Build.ArtifactStagingDirectory)/linux-amd64/mguard-config-tool merge --help || true
   displayName: 'Print mguard-config-tool usage text'
 
 - task: PublishBuildArtifacts@1
