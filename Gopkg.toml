@@ -1,4 +1,8 @@
 [[constraint]]
+  name = "golang.org/x/sys"
+  revision = "86b910548bc16777f40503131aa424ae0a092199" # 2019/01/13 (master)
+
+[[constraint]]
   name = "github.com/integrii/flaggy"
   version = "=1.4.0"
 
@@ -12,7 +16,7 @@
 
 [[constraint]]
   name = "github.com/tredoe/osutil"
-  revision = "e272fdda81c81c765770354538073f24a0d460f5" # 2019/10/18
+  revision = "e272fdda81c81c765770354538073f24a0d460f5" # 2019/10/18 (master)
 
 [prune]
   go-tests = true

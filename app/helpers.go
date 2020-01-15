@@ -109,3 +109,34 @@ func loadConfigurationFile(path string) (*ecs.Container, error) {
 		return nil, fmt.Errorf("Loading file (%s) failed", path)
 	}
 }
+
+// exePath gets the full path of the executable.
+func exePath() (string, error) {
+
+	prog := os.Args[0]
+	p, err := filepath.Abs(prog)
+	if err != nil {
+		return "", err
+	}
+
+	fi, err := os.Stat(p)
+	if err == nil {
+		if !fi.Mode().IsDir() {
+			return p, nil
+		}
+		err = fmt.Errorf("%s is directory", p)
+	}
+
+	if filepath.Ext(p) == "" {
+		p += ".exe"
+		fi, err := os.Stat(p)
+		if err == nil {
+			if !fi.Mode().IsDir() {
+				return p, nil
+			}
+			err = fmt.Errorf("%s is directory", p)
+		}
+	}
+
+	return "", err
+}
