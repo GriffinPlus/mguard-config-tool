@@ -15,6 +15,10 @@
   version = "=0.3.0"
 
 [[constraint]]
+  name = "github.com/spf13/viper"
+  version = "=v1.6.2"
+
+[[constraint]]
   name = "github.com/tredoe/osutil"
   revision = "e272fdda81c81c765770354538073f24a0d460f5" # 2019/10/18 (master)
 
