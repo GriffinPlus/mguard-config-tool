@@ -15,14 +15,10 @@ import (
 func (cmd *ServiceCommand) Execute(args []string, r <-chan svc.ChangeRequest, changes chan<- svc.Status) (ssec bool, errno uint32) {
 	const cmdsAccepted = svc.AcceptStop | svc.AcceptShutdown
 	changes <- svc.Status{State: svc.StartPending}
-	tick := time.Tick(cmd.cycleTime)
 	changes <- svc.Status{State: svc.Running, Accepts: cmdsAccepted}
-	cmd.doWork()
 loop:
 	for {
 		select {
-		case <-tick:
-			cmd.doWork()
 		case c := <-r:
 			switch c.Cmd {
 			case svc.Interrogate:

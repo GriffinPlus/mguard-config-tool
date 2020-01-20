@@ -5,7 +5,6 @@ package main
 import (
 	"fmt"
 	"path/filepath"
-	"time"
 
 	"github.com/integrii/flaggy"
 	log "github.com/sirupsen/logrus"
@@ -21,7 +20,6 @@ type ServiceCommand struct {
 	serviceConfig                 mgr.Config         // configuration of the service
 	elog                          debug.Log          // interface to the windows event log
 	configPath                    string             // path of the configuration file
-	cycleTime                     time.Duration      // interval between two checking cycles
 	firmwareDirectory             string             // path of the directory containing firmware files to put onto the sdcard
 	baseConfigurationPath         string             // path of the mguard configuration file to use as base configuration
 	watchedConfigurationDirectory string             // path of the directory to watch for atv/ecs files with configurations to merge with the base configuration
@@ -41,7 +39,6 @@ func NewServiceCommand() *ServiceCommand {
 	defaultConfigPath := filepath.Join(filepath.Dir(exePath), "mguard-config-tool.yaml")
 	return &ServiceCommand{
 		configPath:  defaultConfigPath,
-		cycleTime:   1000 * time.Millisecond,
 		serviceName: "mg_cfg_svc",
 		serviceConfig: mgr.Config{
 			DisplayName:      "Griffin+ mGuard Configuration Merging Service",

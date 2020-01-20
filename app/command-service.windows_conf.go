@@ -3,11 +3,9 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -16,11 +14,6 @@ import (
 type setting struct {
 	path         string
 	defaultValue interface{}
-}
-
-var settingServiceCycleTimeMs = setting{
-	"service.cycle_time_ms",
-	1000,
 }
 
 var settingInputFirmwareDirectory = setting{
@@ -49,7 +42,6 @@ var settingOutputUpdatePackageDirectory = setting{
 }
 
 var allSettings = []setting{
-	settingServiceCycleTimeMs,
 	settingInputFirmwareDirectory,
 	settingInputBaseConfigurationFile,
 	settingInputWatchedConfigurationDirectory,
@@ -95,13 +87,6 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 
 	// configuration is available now
 	// => validate settings
-
-	// service: cycle time
-	log.Debugf("Setting '%s': '%s'", settingServiceCycleTimeMs.path, conf.GetString(settingServiceCycleTimeMs.path))
-	cmd.cycleTime = time.Duration(conf.GetInt32(settingServiceCycleTimeMs.path)) * time.Millisecond
-	if cmd.cycleTime <= time.Duration(0) {
-		return fmt.Errorf("Invalid value '%s' for setting '%s'", conf.GetString(settingServiceCycleTimeMs.path), settingServiceCycleTimeMs.path)
-	}
 
 	// input: firmware directory
 	log.Debugf("Setting '%s': '%s'", settingInputFirmwareDirectory.path, conf.GetString(settingInputFirmwareDirectory.path))
@@ -150,7 +135,6 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 
 	// log configuration
 	log.Info("--- Configuration ---")
-	log.Infof("Cycle time:                      %s", cmd.cycleTime)
 	log.Infof("Firmware Directory:              %s", cmd.firmwareDirectory)
 	log.Infof("Base Configuration File:         %s", cmd.baseConfigurationPath)
 	log.Infof("Watched Configuration Directory: %s", cmd.watchedConfigurationDirectory)
