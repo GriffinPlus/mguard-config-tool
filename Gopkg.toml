@@ -3,6 +3,10 @@
   revision = "86b910548bc16777f40503131aa424ae0a092199" # 2019/01/13 (master)
 
 [[constraint]]
+  name = "github.com/fsnotify/fsnotify"
+  version = "=v1.4.7"
+
+[[constraint]]
   name = "github.com/integrii/flaggy"
   version = "=1.4.0"
 
