@@ -146,3 +146,27 @@ func exePath() (string, error) {
 
 	return "", err
 }
+
+// isPossiblemGuardConfigurationFile gives an educated guess whether the specified filename looks like a
+// mGuard configuration file.
+func isPossiblemGuardConfigurationFile(path string) (bool, error) {
+
+	stats, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+
+	if !stats.IsDir() {
+		ext := strings.ToLower(filepath.Ext(path))
+		switch ext {
+		case ".atv":
+			fallthrough
+		case ".ecs":
+			fallthrough
+		case ".tgz":
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
