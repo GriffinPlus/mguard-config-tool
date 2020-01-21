@@ -1,0 +1,14 @@
+input:
+  base_configuration:
+    path: ./data/configs/default.tgz
+  firmware:
+    path: ./data/firmware
+  hotfolder:
+    path: ./data/input
+output:
+  merged_configurations:
+    path: ./data/output-merged-configs
+    write_atv: true
+    write_ecs: true
+  update_packages:
+    path: ./data/output-update-packages

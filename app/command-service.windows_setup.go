@@ -15,7 +15,7 @@ func (cmd *ServiceCommand) setupFilesystem() error {
 	// create all configured directories recursively, if necessary
 	dirs := []string{
 		cmd.firmwareDirectory,
-		cmd.watchedConfigurationDirectory,
+		cmd.hotFolderPath,
 		cmd.mergedConfigurationDirectory,
 		cmd.updatePackageDirectory,
 		filepath.Dir(cmd.baseConfigurationPath),

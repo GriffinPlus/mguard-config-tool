@@ -31,7 +31,7 @@ func (cmd *ServiceCommand) Execute(args []string, r <-chan svc.ChangeRequest, ch
 	defer watcher.Close()
 
 	// start watching hot folder
-	err = watcher.Add(cmd.watchedConfigurationDirectory)
+	err = watcher.Add(cmd.hotFolderPath)
 	if err != nil {
 		log.Errorf("%v", err)
 		changes <- svc.Status{State: svc.StopPending}
@@ -46,7 +46,7 @@ func (cmd *ServiceCommand) Execute(args []string, r <-chan svc.ChangeRequest, ch
 
 	// populate list of files in hot folder to start with
 	filesInHotFolder := make(map[string]time.Time)
-	err = filepath.Walk(cmd.watchedConfigurationDirectory, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(cmd.hotFolderPath, func(path string, info os.FileInfo, err error) error {
 		path, err = filepath.Abs(path)
 		if err == nil {
 			isConfFile, err := isPossiblemGuardConfigurationFile(path)

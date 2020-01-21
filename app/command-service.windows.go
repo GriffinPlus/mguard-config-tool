@@ -16,21 +16,23 @@ import (
 
 // ServiceCommand represents the 'service' subcommand.
 type ServiceCommand struct {
-	serviceName                   string             // name of the service
-	serviceConfig                 mgr.Config         // configuration of the service
-	elog                          debug.Log          // interface to the windows event log
-	configPath                    string             // path of the configuration file
-	firmwareDirectory             string             // path of the directory containing firmware files to put onto the sdcard
-	baseConfigurationPath         string             // path of the mguard configuration file to use as base configuration
-	watchedConfigurationDirectory string             // path of the directory to watch for atv/ecs files with configurations to merge with the base configuration
-	mergedConfigurationDirectory  string             // path of the directory where to store merged mguard configurations
-	updatePackageDirectory        string             // path of the directory where to store update packages (for use on an sdcard)
-	subcommand                    *flaggy.Subcommand // flaggy's subcommand representing the 'service' subcommand
-	installSubcommand             *flaggy.Subcommand // flaggy's subcommand representing the 'service install' subcommand
-	uninstallSubcommand           *flaggy.Subcommand // flaggy's subcommand representing the 'service uninstall' subcommand
-	startSubcommand               *flaggy.Subcommand // flaggy's subcommand representing the 'service start' subcommand
-	stopSubcommand                *flaggy.Subcommand // flaggy's subcommand representing the 'service stop' subcommand
-	debugSubcommand               *flaggy.Subcommand // flaggy's subcommand representing the 'service debug' subcommand
+	serviceName                  string             // name of the service
+	serviceConfig                mgr.Config         // configuration of the service
+	elog                         debug.Log          // interface to the windows event log
+	configPath                   string             // path of the configuration file
+	firmwareDirectory            string             // path of the directory containing firmware files to put onto the sdcard
+	baseConfigurationPath        string             // path of the mguard configuration file to use as base configuration
+	hotFolderPath                string             // path of the directory to watch for atv/ecs files with configurations to merge with the base configuration
+	mergedConfigurationDirectory string             // path of the directory where to store merged mguard configurations
+	mergedConfigurationsWriteAtv bool               // true to write an ATV file with the merged configuration, otherwise false
+	mergedConfigurationsWriteEcs bool               // true to write an ECS file with the merged configuration, otherwise false
+	updatePackageDirectory       string             // path of the directory where to store update packages (for use on an sdcard)
+	subcommand                   *flaggy.Subcommand // flaggy's subcommand representing the 'service' subcommand
+	installSubcommand            *flaggy.Subcommand // flaggy's subcommand representing the 'service install' subcommand
+	uninstallSubcommand          *flaggy.Subcommand // flaggy's subcommand representing the 'service uninstall' subcommand
+	startSubcommand              *flaggy.Subcommand // flaggy's subcommand representing the 'service start' subcommand
+	stopSubcommand               *flaggy.Subcommand // flaggy's subcommand representing the 'service stop' subcommand
+	debugSubcommand              *flaggy.Subcommand // flaggy's subcommand representing the 'service debug' subcommand
 }
 
 // NewServiceCommand creates a new command handling the 'service' subcommand.

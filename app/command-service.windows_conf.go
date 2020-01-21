@@ -16,37 +16,49 @@ type setting struct {
 	defaultValue interface{}
 }
 
-var settingInputFirmwareDirectory = setting{
-	"input.firmware_directory",
-	"./firmware",
+var settingInputFirmwarePath = setting{
+	"input.firmware.path",
+	"./data/firmware",
 }
 
-var settingInputBaseConfigurationFile = setting{
-	"input.base_configuration_path",
-	"./configs/default.tgz",
+var settingInputBaseConfigurationPath = setting{
+	"input.base_configuration.path",
+	"./data/configs/default.tgz",
 }
 
-var settingInputWatchedConfigurationDirectory = setting{
-	"input.watched_configuration_directory",
-	"./input",
+var settingInputHotfolderPath = setting{
+	"input.hotfolder.path",
+	"./data/input",
 }
 
-var settingOutputMergedConfigurationDirectory = setting{
-	"output.merged_configuration_directory",
-	"./output-ecs",
+var settingOutputMergedConfigurationsPath = setting{
+	"output.merged_configurations.path",
+	"./data/output-merged-configs",
 }
 
-var settingOutputUpdatePackageDirectory = setting{
-	"output.update_package_directory",
-	"./output-package",
+var settingOutputMergedConfigurationsWriteAtv = setting{
+	"output.merged_configurations.write_atv",
+	true,
+}
+
+var settingOutputMergedConfigurationsWriteEcs = setting{
+	"output.merged_configurations.write_ecs",
+	true,
+}
+
+var settingOutputUpdatePackagesPath = setting{
+	"output.update_packages.path",
+	"./data/output-update-packages",
 }
 
 var allSettings = []setting{
-	settingInputFirmwareDirectory,
-	settingInputBaseConfigurationFile,
-	settingInputWatchedConfigurationDirectory,
-	settingOutputMergedConfigurationDirectory,
-	settingOutputUpdatePackageDirectory,
+	settingInputFirmwarePath,
+	settingInputBaseConfigurationPath,
+	settingInputHotfolderPath,
+	settingOutputMergedConfigurationsPath,
+	settingOutputMergedConfigurationsWriteAtv,
+	settingOutputMergedConfigurationsWriteEcs,
+	settingOutputUpdatePackagesPath,
 }
 
 // loadServiceConfiguration loads the service configuration from the specified file.
@@ -88,9 +100,9 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	// configuration is available now
 	// => validate settings
 
-	// input: firmware directory
-	log.Debugf("Setting '%s': '%s'", settingInputFirmwareDirectory.path, conf.GetString(settingInputFirmwareDirectory.path))
-	cmd.firmwareDirectory = conf.GetString(settingInputFirmwareDirectory.path)
+	// input: firmware path (must be a directory)
+	log.Debugf("Setting '%s': '%s'", settingInputFirmwarePath.path, conf.GetString(settingInputFirmwarePath.path))
+	cmd.firmwareDirectory = conf.GetString(settingInputFirmwarePath.path)
 	path, err = filepath.Abs(cmd.firmwareDirectory)
 	if err != nil {
 		return err
@@ -98,35 +110,43 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	cmd.firmwareDirectory = path
 
 	// input: base configuration file
-	log.Debugf("Setting '%s': '%s'", settingInputBaseConfigurationFile.path, conf.GetString(settingInputBaseConfigurationFile.path))
-	cmd.baseConfigurationPath = conf.GetString(settingInputBaseConfigurationFile.path)
+	log.Debugf("Setting '%s': '%s'", settingInputBaseConfigurationPath.path, conf.GetString(settingInputBaseConfigurationPath.path))
+	cmd.baseConfigurationPath = conf.GetString(settingInputBaseConfigurationPath.path)
 	path, err = filepath.Abs(cmd.baseConfigurationPath)
 	if err != nil {
 		return err
 	}
 	cmd.baseConfigurationPath = path
 
-	// input: watched configuration directory
-	log.Debugf("Setting '%s': '%s'", settingInputWatchedConfigurationDirectory.path, conf.GetString(settingInputWatchedConfigurationDirectory.path))
-	cmd.watchedConfigurationDirectory = conf.GetString(settingInputWatchedConfigurationDirectory.path)
-	path, err = filepath.Abs(cmd.watchedConfigurationDirectory)
+	// input: hot folder path
+	log.Debugf("Setting '%s': '%s'", settingInputHotfolderPath.path, conf.GetString(settingInputHotfolderPath.path))
+	cmd.hotFolderPath = conf.GetString(settingInputHotfolderPath.path)
+	path, err = filepath.Abs(cmd.hotFolderPath)
 	if err != nil {
 		return err
 	}
-	cmd.watchedConfigurationDirectory = path
+	cmd.hotFolderPath = path
 
 	// output: merged configuration directory
-	log.Debugf("Setting '%s': '%s'", settingOutputMergedConfigurationDirectory.path, conf.GetString(settingOutputMergedConfigurationDirectory.path))
-	cmd.mergedConfigurationDirectory = conf.GetString(settingOutputMergedConfigurationDirectory.path)
+	log.Debugf("Setting '%s': '%s'", settingOutputMergedConfigurationsPath.path, conf.GetString(settingOutputMergedConfigurationsPath.path))
+	cmd.mergedConfigurationDirectory = conf.GetString(settingOutputMergedConfigurationsPath.path)
 	path, err = filepath.Abs(cmd.mergedConfigurationDirectory)
 	if err != nil {
 		return err
 	}
 	cmd.mergedConfigurationDirectory = path
 
+	// output: merged configuration directory - write atv
+	log.Debugf("Setting '%s': '%s'", settingOutputMergedConfigurationsWriteAtv.path, conf.GetString(settingOutputMergedConfigurationsWriteAtv.path))
+	cmd.mergedConfigurationsWriteAtv = conf.GetBool(settingOutputMergedConfigurationsWriteAtv.path)
+
+	// output: merged configuration directory - write ecs
+	log.Debugf("Setting '%s': '%s'", settingOutputMergedConfigurationsWriteEcs.path, conf.GetString(settingOutputMergedConfigurationsWriteEcs.path))
+	cmd.mergedConfigurationsWriteEcs = conf.GetBool(settingOutputMergedConfigurationsWriteEcs.path)
+
 	// output: update package directory
-	log.Debugf("Setting '%s': '%s'", settingOutputUpdatePackageDirectory.path, conf.GetString(settingOutputUpdatePackageDirectory.path))
-	cmd.updatePackageDirectory = conf.GetString(settingOutputUpdatePackageDirectory.path)
+	log.Debugf("Setting '%s': '%s'", settingOutputUpdatePackagesPath.path, conf.GetString(settingOutputUpdatePackagesPath.path))
+	cmd.updatePackageDirectory = conf.GetString(settingOutputUpdatePackagesPath.path)
 	path, err = filepath.Abs(cmd.updatePackageDirectory)
 	if err != nil {
 		return err
@@ -135,11 +155,13 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 
 	// log configuration
 	log.Info("--- Configuration ---")
-	log.Infof("Firmware Directory:              %s", cmd.firmwareDirectory)
-	log.Infof("Base Configuration File:         %s", cmd.baseConfigurationPath)
-	log.Infof("Watched Configuration Directory: %s", cmd.watchedConfigurationDirectory)
-	log.Infof("Merged Configuration Directory:  %s", cmd.mergedConfigurationDirectory)
-	log.Infof("Update Package Directory:        %s", cmd.updatePackageDirectory)
+	log.Infof("Firmware Directory:               %v", cmd.firmwareDirectory)
+	log.Infof("Base Configuration File:          %v", cmd.baseConfigurationPath)
+	log.Infof("Hot folder:                       %v", cmd.hotFolderPath)
+	log.Infof("Merged Configuration Directory:   %v", cmd.mergedConfigurationDirectory)
+	log.Infof("  - Write ATV:                    %v", cmd.mergedConfigurationsWriteAtv)
+	log.Infof("  - Write ECS:                    %v", cmd.mergedConfigurationsWriteEcs)
+	log.Infof("Update Package Directory:         %v", cmd.updatePackageDirectory)
 	log.Info("--- Configuration End ---")
 
 	return nil
