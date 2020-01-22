@@ -265,7 +265,10 @@ output:
     path: ./data/output-update-packages       # directory: update packages with firmware and the merged configuration are put here
 ```
 
-The configured directories are created, if necessary and permissions allow that.
+The configured directories are created, if necessary and permissions allow that. Before the service can run, the base configuration
+file and the firmware files must be provided in the configured directories. If the base configuration is missing, the service
+will fail to start. If the firmware is missing, the generated packages will not contain any firmware files - only the merged
+configuration.
 
 ## Known Limitations
 
