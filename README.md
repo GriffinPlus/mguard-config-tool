@@ -32,6 +32,7 @@ The *mGuard-Config-Tool* aims to ease handling *mGuard* configuration files. It'
   - User Management: Add users and set/verify passwords
   - Conditioning: Condition a configuration and convert formats (ATV <=> ECS)
   - Merging: Merge two configurations into one
+- On Windows: Service for merging configurations and creating update packages
 
 ## Releases
 
@@ -204,6 +205,67 @@ merge - Merge two mGuard configuration files into one
        --ecs-out   File receiving the merged configuration (ECS container, instead of stdout)
        --verbose   Include additional messages that might help when problems occur.
 ```
+
+### Subcommand: service \*\***WINDOWS ONLY**\*\*
+
+The `service` subcommand provides access to the *Configuration Preparation Service* (CPS). The CPS is part of the
+*mGuard-Config-Tool*, stays in the background and monitors a specific directory for ATV/ECS files (hot-folder technique).
+As soon as a new ATV/ECS file is dropped into the hot-folder, the service merges a specific mGuard base configuration with
+the dropped configuration and generates ATV/ECS files with the merged configuration. Furthermore the service generates a
+zip file containing everything that is needed to flash a specific firmware and to load an initial configuration into a
+mGuard device. This is particularly useful when preparing mGuards in production and allows to run (and update) the
+*mGuard-Config-Tool* on a server. By default the service is registered to run as `LocalSystem` which means that it runs
+with administrative rights on the machine it is installed on. This ensures that you do not run into permission issues when
+running it locally, but you are strongly encouraged to create a service account with the minimum rights the service needs
+to access the configured directories. This step is also required when working with shared folders on a network as
+`LocalSystem` is often not allowed to access file shares.
+
+The `install` and `uninstall` subcommand installs respectively uninstalls the *mGuard-Config-Tool* as a windows service.
+The `start` and `stop` subcommands communicate with the Service Control Manager (SCM) to start/stop the installed service.
+As for all services, the usual service control panel (`services.msc`) can also be used. The `debug` subcommand runs the
+service without installation and is used for debugging purposes only.
+
+```
+service - Controls the mGuard configuration merging service
+
+  Usage:
+	service [install|uninstall|start|stop|debug]
+
+  Subcommands: 
+    install     Install the windows service
+    uninstall   Uninstall the windows service
+    start       Start the installed windows service
+    stop        Stop the installed windows service
+    debug       Run as a command line application for debugging purposes
+
+  Flags: 
+       --version   Displays the program version string.
+    -h --help      Displays help with available flag, subcommand, and positional value parameters.
+       --verbose   Include additional messages that might help when problems occur.
+```
+
+The service can be configured using a YAML configuration file that is expected beside `mguard-config-tool.exe`. It must
+be named `mguard-config-tool.yaml`. The default configuration is generated in the first run, if permissions allow that.
+The default configuration file looks like the following:
+
+```yaml
+input:
+  base_configuration:
+    path: ./data/configs/default.tgz          # file: base configuration (usually an ECS container)
+  firmware:
+    path: ./data/firmware                     # directory: files to copy into the 'Firmware' directory of the scdard
+  hotfolder:
+    path: ./data/input                        # directory: the hot-folder that is monitored for ATV/ECS files to process
+output:
+  merged_configurations:
+    path: ./data/output-merged-configs        # directory: merged configurations are put here
+    write_atv: true                           # controls whether to generate an ATV file with the merged configuration
+    write_ecs: true                           # controls whether to generate an ECS file with the merged configuration
+  update_packages:
+    path: ./data/output-update-packages       # directory: update packages with firmware and the merged configuration are put here
+```
+
+The configured directories are created, if necessary and permissions allow that.
 
 ## Known Limitations
 
