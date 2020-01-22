@@ -84,7 +84,7 @@ loop:
 			case svc.Stop, svc.Shutdown:
 				break loop
 			default:
-				cmd.elog.Error(1, fmt.Sprintf("Unexpected control request #%d", c))
+				log.Errorf("Unexpected control request #%d", c)
 			}
 
 		// handle file system watcher events

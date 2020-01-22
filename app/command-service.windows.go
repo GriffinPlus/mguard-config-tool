@@ -3,14 +3,12 @@
 package main
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/integrii/flaggy"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/debug"
-	"golang.org/x/sys/windows/svc/eventlog"
 	"golang.org/x/sys/windows/svc/mgr"
 )
 
@@ -18,7 +16,6 @@ import (
 type ServiceCommand struct {
 	serviceName                  string             // name of the service
 	serviceConfig                mgr.Config         // configuration of the service
-	elog                         debug.Log          // interface to the windows event log
 	configPath                   string             // path of the configuration file
 	firmwareDirectory            string             // path of the directory containing firmware files to put onto the sdcard
 	baseConfigurationPath        string             // path of the mguard configuration file to use as base configuration
@@ -141,16 +138,12 @@ func (cmd *ServiceCommand) ExecuteCommand() error {
 func (cmd *ServiceCommand) runService(isDebug bool) error {
 
 	// initialize the event log
-	var err error
-	if isDebug {
-		cmd.elog = debug.New(cmd.serviceName)
-	} else {
-		cmd.elog, err = eventlog.Open(cmd.serviceName)
-		if err != nil {
-			return err
-		}
+	logAdapter := NewWindowsEventLogAdapter(cmd.serviceName, isDebug)
+	err := logAdapter.Open()
+	if err != nil {
+		return err
 	}
-	defer cmd.elog.Close()
+	defer logAdapter.Close()
 
 	// load the service configuration file
 	err = cmd.loadServiceConfiguration(cmd.configPath, true)
@@ -172,18 +165,18 @@ func (cmd *ServiceCommand) runService(isDebug bool) error {
 	}
 
 	// start the service
-	cmd.elog.Info(1, fmt.Sprintf("Starting %s service", cmd.serviceName))
+	log.Infof("Starting %s service", cmd.serviceName)
 	run := svc.Run
 	if isDebug {
 		run = debug.Run
 	}
 	err = run(cmd.serviceName, cmd)
 	if err != nil {
-		cmd.elog.Error(1, fmt.Sprintf("%s service failed: %v", cmd.serviceName, err))
+		log.Errorf("%s service failed: %v", cmd.serviceName, err)
 		return err
 	}
 
 	// the service has stopped
-	cmd.elog.Info(1, fmt.Sprintf("%s service stopped", cmd.serviceName))
+	log.Infof("%s service stopped", cmd.serviceName)
 	return nil
 }
