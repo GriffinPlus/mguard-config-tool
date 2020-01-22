@@ -40,7 +40,7 @@ func NewServiceCommand() *ServiceCommand {
 		configPath:  defaultConfigPath,
 		serviceName: "mg_cfg_svc",
 		serviceConfig: mgr.Config{
-			DisplayName:      "Griffin+ mGuard Configuration Merging Service",
+			DisplayName:      "mGuard Configuration Preparation Service (CPS)",
 			Description:      "Monitors hot-folder for mGuard configuration files (.atv/.ecs) and merges these files with a common parameter set.",
 			ErrorControl:     mgr.ErrorNormal,
 			StartType:        mgr.StartAutomatic,
