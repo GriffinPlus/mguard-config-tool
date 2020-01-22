@@ -3,9 +3,12 @@
 package main
 
 import (
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -67,6 +70,53 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 				return err
 			}
 		}
+	} else {
+		log.Info("Output directory is not specified. Skipping generation of ATV/ECS files with the merged configuration.")
+	}
+
+	// build archive containing the contents of an sdcard that can be used to flash an mGuard with a
+	// the defined firmware and load the merged configuration
+	if len(cmd.updatePackageDirectory) > 0 {
+
+		// create temporary directory to prepare the package in
+		scratchDir, err := ioutil.TempDir("", "sdcard")
+		if err != nil {
+			log.Errorf("%v", err)
+			return err
+		}
+		defer os.RemoveAll(scratchDir)
+
+		// copy firmware files
+		if len(cmd.firmwareDirectory) > 0 {
+			src := cmd.firmwareDirectory + string(filepath.Separator)
+			dest := filepath.Join(scratchDir, "Firmware") + string(filepath.Separator)
+			err := copy.Copy(src, dest)
+			if err != nil {
+				log.Errorf("Copying firmware files into scratch directory failed: %s", err)
+				return err
+			}
+		} else {
+			log.Info("Firmware directory is not specified. Skipping adding firmware to update package.")
+		}
+
+		// write ECS container with the merged configuration
+		ecsFilePath := filepath.Join(scratchDir, "ECS.tgz")
+		err = mergedEcs.ToFile(ecsFilePath)
+		if err != nil {
+			log.Errorf("Writing ECS file (%s) failed: %s", ecsFilePath, err)
+			return err
+		}
+
+		// create a package wrapping everything up using zip
+		zipPath := filepath.Join(cmd.updatePackageDirectory, filenameWithoutExtension+".zip")
+		err = zipFiles(scratchDir, zipPath)
+		if err != nil {
+			log.Errorf("Creating update package (%s) failed: %s", zipPath, err)
+			return err
+		}
+
+	} else {
+		log.Info("Output directory is not specified. Skipping generation of update package.")
 	}
 
 	return nil

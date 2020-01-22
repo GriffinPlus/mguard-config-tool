@@ -1,6 +1,7 @@
 package main
 
 import (
+	"archive/zip"
 	"bytes"
 	"fmt"
 	"io/ioutil"
@@ -169,4 +170,65 @@ func isPossiblemGuardConfigurationFile(path string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+// zipFiles puts the specified files into a zip archive at the specified location.
+func zipFiles(src string, zipPath string) error {
+
+	// open zip file for writing
+	zipFile, err := os.OpenFile(zipPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer zipFile.Close()
+
+	// create archiver on top of the file
+	zipWriter := zip.NewWriter(zipFile)
+
+	// add files to the zip file
+	err = filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+
+		// skip directories
+		if info.IsDir() {
+			return nil
+		}
+
+		// abort on error
+		if err != nil {
+			return err
+		}
+
+		// load file to add into memory
+		buf, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		// add file to the zip archive
+		relpath, err := filepath.Rel(src, path)
+		f, err := zipWriter.Create(relpath)
+		if err != nil {
+			return err
+		}
+		_, err = f.Write(buf)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	// abort, if an error occurred iterating over the files
+	if err != nil {
+		zipWriter.Close()
+		return err
+	}
+
+	// close the archive
+	err = zipWriter.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
