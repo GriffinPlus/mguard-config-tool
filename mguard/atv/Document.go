@@ -240,6 +240,8 @@ func (doc *Document) MergeTableSetting(setting *Setting) error {
 					log.Debugf("Table value '%s' does not contain row to set, yet. Appending\n%s", setting.Name, rowToSet.String())
 					node.Setting.TableValue.Rows = append(node.Setting.TableValue.Rows, rowToSet)
 				}
+
+				return nil
 			}
 		}
 	}
