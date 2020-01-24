@@ -35,7 +35,7 @@ func (adapter *WindowsEventLogAdapter) Open() error {
 			}
 			adapter.elog = log
 		}
-		log.AddHook(adapter)
+		log.StandardLogger().AddHook(adapter)
 	}
 
 	return nil
@@ -45,6 +45,22 @@ func (adapter *WindowsEventLogAdapter) Open() error {
 func (adapter *WindowsEventLogAdapter) Close() {
 	if adapter != nil {
 		if adapter.elog != nil {
+
+			// remove log hooks
+			levelhooks := log.StandardLogger().Hooks
+			for level, hooks := range levelhooks {
+				for i, hook := range hooks {
+					if hook == adapter {
+						copy(hooks[i:], hooks[i+1:])
+						hooks[len(hooks)-1] = nil
+						hooks = hooks[:len(hooks)-1]
+					}
+				}
+				levelhooks[level] = hooks
+			}
+			log.StandardLogger().ReplaceHooks(levelhooks)
+
+			// close event log
 			adapter.elog.Close()
 			adapter.elog = nil
 		}
