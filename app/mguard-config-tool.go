@@ -49,7 +49,8 @@ func main() {
 	// execute the appropriate handler
 	err := args.subcommand.ExecuteCommand()
 	if err != nil {
-		log.Fatalf("Processing command failed: %s", err)
+		log.Errorf("Processing command failed: %s", err)
+		ExitCode = 1
 	}
 
 	// exit with the specified code
