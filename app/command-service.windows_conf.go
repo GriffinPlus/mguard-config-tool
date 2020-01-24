@@ -17,9 +17,9 @@ type setting struct {
 	defaultValue interface{}
 }
 
-var settingInputFirmwarePath = setting{
-	"input.firmware.path",
-	"./data/firmware",
+var settingInputSdCardTemplatePath = setting{
+	"input.sdcard_template.path",
+	"./data/sdcard-template",
 }
 
 var settingInputBaseConfigurationPath = setting{
@@ -53,7 +53,7 @@ var settingOutputUpdatePackagesPath = setting{
 }
 
 var allSettings = []setting{
-	settingInputFirmwarePath,
+	settingInputSdCardTemplatePath,
 	settingInputBaseConfigurationPath,
 	settingInputHotfolderPath,
 	settingOutputMergedConfigurationsPath,
@@ -101,17 +101,17 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	// configuration is available now
 	// => validate settings
 
-	// input: firmware path (must be a directory)
-	log.Debugf("Setting '%s': '%s'", settingInputFirmwarePath.path, conf.GetString(settingInputFirmwarePath.path))
-	cmd.firmwareDirectory = conf.GetString(settingInputFirmwarePath.path)
-	if filepath.IsAbs(cmd.firmwareDirectory) {
-		cmd.firmwareDirectory = filepath.Clean(cmd.firmwareDirectory)
+	// input: sdcard template path (must be a directory)
+	log.Debugf("Setting '%s': '%s'", settingInputSdCardTemplatePath.path, conf.GetString(settingInputSdCardTemplatePath.path))
+	cmd.sdcardTemplateDirectory = conf.GetString(settingInputSdCardTemplatePath.path)
+	if filepath.IsAbs(cmd.sdcardTemplateDirectory) {
+		cmd.sdcardTemplateDirectory = filepath.Clean(cmd.sdcardTemplateDirectory)
 	} else {
-		path, err := filepath.Abs(filepath.Join(configDir, cmd.firmwareDirectory))
+		path, err := filepath.Abs(filepath.Join(configDir, cmd.sdcardTemplateDirectory))
 		if err != nil {
 			return err
 		}
-		cmd.firmwareDirectory = path
+		cmd.sdcardTemplateDirectory = path
 	}
 
 	// input: base configuration file
@@ -177,7 +177,7 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	// log configuration
 	logtext := strings.Builder{}
 	logtext.WriteString(fmt.Sprintf("--- Configuration ---\n"))
-	logtext.WriteString(fmt.Sprintf("Firmware Directory:               %v\n", cmd.firmwareDirectory))
+	logtext.WriteString(fmt.Sprintf("SD Card Template Directory:       %v\n", cmd.sdcardTemplateDirectory))
 	logtext.WriteString(fmt.Sprintf("Base Configuration File:          %v\n", cmd.baseConfigurationPath))
 	logtext.WriteString(fmt.Sprintf("Hot folder:                       %v\n", cmd.hotFolderPath))
 	logtext.WriteString(fmt.Sprintf("Merged Configuration Directory:   %v\n", cmd.mergedConfigurationDirectory))

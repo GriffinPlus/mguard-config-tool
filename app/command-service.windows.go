@@ -17,7 +17,7 @@ type ServiceCommand struct {
 	serviceName                  string             // name of the service
 	serviceConfig                mgr.Config         // configuration of the service
 	configPath                   string             // path of the configuration file
-	firmwareDirectory            string             // path of the directory containing firmware files to put onto the sdcard
+	sdcardTemplateDirectory      string             // path of the directory containing the basic structure of an sdcard (incl. firmware files)
 	baseConfigurationPath        string             // path of the mguard configuration file to use as base configuration
 	hotFolderPath                string             // path of the directory to watch for atv/ecs files with configurations to merge with the base configuration
 	mergedConfigurationDirectory string             // path of the directory where to store merged mguard configurations

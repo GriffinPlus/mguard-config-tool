@@ -252,10 +252,10 @@ The default configuration file looks like the following:
 input:
   base_configuration:
     path: ./data/configs/default.tgz          # file: base configuration (usually an ECS container)
-  firmware:
-    path: ./data/firmware                     # directory: files to copy into the 'Firmware' directory of the scdard
   hotfolder:
     path: ./data/input                        # directory: the hot-folder that is monitored for ATV/ECS files to process
+  sdcard_template:
+    path: ./data/sdcard-template              # directory: basic sdcard structure (with firmware files)
 output:
   merged_configurations:
     path: ./data/output-merged-configs        # directory: merged configurations are put here
@@ -267,7 +267,7 @@ output:
 
 The configured directories are created, if necessary and permissions allow that. Before the service can run, the base configuration
 file and the firmware files must be provided in the configured directories. If the base configuration is missing, the service
-will fail to start. If the firmware is missing, the generated packages will not contain any firmware files - only the merged
+will fail to start. If the sdcard template is missing, the generated packages will not contain any firmware files - only the merged
 configuration.
 
 ## Known Limitations

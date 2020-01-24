@@ -86,24 +86,24 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 		}
 		defer os.RemoveAll(scratchDir)
 
-		// copy firmware files
-		if len(cmd.firmwareDirectory) > 0 {
-			src := cmd.firmwareDirectory + string(filepath.Separator)
-			dest := filepath.Join(scratchDir, "Firmware") + string(filepath.Separator)
+		// copy files from sdcard template
+		if len(cmd.sdcardTemplateDirectory) > 0 {
+			src := cmd.sdcardTemplateDirectory + string(filepath.Separator)
+			dest := scratchDir + string(filepath.Separator)
 			err := copy.Copy(src, dest)
 			if err != nil {
-				log.Errorf("Copying firmware files into scratch directory failed: %s", err)
+				log.Errorf("Copying sdcard template files into scratch directory failed: %s", err)
 				return err
 			}
 		} else {
-			log.Info("Firmware directory is not specified. Skipping adding firmware to update package.")
+			log.Errorf("The sdcard template directory is not specified. Skipping adding files from template to update package.")
 		}
 
-		// write ECS container with the merged configuration
-		ecsFilePath := filepath.Join(scratchDir, "ECS.tgz")
-		err = mergedEcs.ToFile(ecsFilePath)
+		// write ATV container with the merged configuration
+		atvFilePath := filepath.Join(scratchDir, "Rescue Config", "preconfig.atv")
+		err = mergedEcs.Atv.ToFile(atvFilePath)
 		if err != nil {
-			log.Errorf("Writing ECS file (%s) failed: %s", ecsFilePath, err)
+			log.Errorf("Writing ATV file (%s) failed: %s", atvFilePath, err)
 			return err
 		}
 
