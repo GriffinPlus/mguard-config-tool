@@ -24,7 +24,7 @@ var settingInputSdCardTemplatePath = setting{
 
 var settingInputBaseConfigurationPath = setting{
 	"input.base_configuration.path",
-	"./data/configs/default.tgz",
+	"./data/configs/default.atv",
 }
 
 var settingInputHotfolderPath = setting{
@@ -44,7 +44,7 @@ var settingOutputMergedConfigurationsWriteAtv = setting{
 
 var settingOutputMergedConfigurationsWriteEcs = setting{
 	"output.merged_configurations.write_ecs",
-	true,
+	false,
 }
 
 var settingOutputUpdatePackagesPath = setting{
