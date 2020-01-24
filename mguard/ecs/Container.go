@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/griffinplus/mguard-config-tool/mguard/atv"
@@ -172,6 +173,16 @@ func (container *Container) Dupe() *Container {
 
 // ToFile saves the ECS container to the specified file.
 func (container *Container) ToFile(path string) error {
+
+	// create directories on the way, if necessary
+	path, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(filepath.Dir(path), os.ModePerm)
+	if err != nil {
+		return err
+	}
 
 	// open the file for writing
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)

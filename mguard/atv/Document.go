@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/alecthomas/participle"
@@ -285,6 +286,16 @@ func (doc *Document) GetRowIDs() []RowID {
 
 // ToFile saves the ATV document to the specified file.
 func (doc *Document) ToFile(path string) error {
+
+	// create directories on the way, if necessary
+	path, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(filepath.Dir(path), os.ModePerm)
+	if err != nil {
+		return err
+	}
 
 	// open the file for writing
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
