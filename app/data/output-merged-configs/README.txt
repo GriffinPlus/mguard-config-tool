@@ -1,0 +1,1 @@
+This directory contains the merged results of the base configuration and configurations that have been dropped into the 'input' folder.

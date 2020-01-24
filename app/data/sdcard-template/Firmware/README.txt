@@ -1,0 +1,1 @@
+This directory contains the basic structure of a sdcard update package.

@@ -1,0 +1,1 @@
+This directory contains the base configuration the final configuration is built on top.

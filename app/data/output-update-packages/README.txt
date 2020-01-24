@@ -1,0 +1,1 @@
+This directory contains generated sdcard update packages that can be used to update mGuards.
