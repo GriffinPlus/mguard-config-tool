@@ -96,6 +96,12 @@ func (doc *Document) parse(data string) error {
 		return err
 	}
 
+	// ensure that the document contains a version pragma
+	_, err = root.GetVersion()
+	if err != nil {
+		return err
+	}
+
 	/*
 		// print the document to the log
 		log.Debugf(
@@ -252,6 +258,26 @@ func (doc *Document) MergeTableSetting(setting *Setting) error {
 	newNode := &DocumentNode{Setting: copy}
 	doc.Root.Nodes = append(doc.Root.Nodes, newNode)
 	return nil
+}
+
+// GetPragma gets the pragma with the specified name.
+func (doc *Document) GetPragma(name string) *Pragma {
+
+	if doc == nil {
+		return nil
+	}
+
+	return doc.Root.GetPragma(name)
+}
+
+// GetVersion gets the version of the ATV document.
+func (doc *Document) GetVersion() (*Version, error) {
+
+	if doc == nil {
+		return nil, nil
+	}
+
+	return doc.Root.GetVersion()
 }
 
 // GetRowReferences returns all row references recursively.
