@@ -1,4 +1,4 @@
-package atv
+package model
 
 import (
 	"strings"
@@ -57,7 +57,7 @@ func (node *DocumentNode) actual() DocumentWriter {
 	if node.Setting != nil {
 		return node.Setting
 	}
-	
+
 	panic("Unhandled node type")
 }
 

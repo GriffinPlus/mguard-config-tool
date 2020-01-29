@@ -1,4 +1,4 @@
-package atv
+package model
 
 import (
 	"fmt"

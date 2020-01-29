@@ -1,4 +1,4 @@
-package atv
+package model
 
 import (
 	"bytes"
@@ -29,7 +29,7 @@ type GetRowIDs interface {
 	GetRowIDs() []RowID
 }
 
-// RowID is the id of a table row in an ATV diocument.
+// RowID is the id of a table row in an ATV document.
 type RowID string
 
 // Document represents a mGuard configuration document.
@@ -37,8 +37,8 @@ type Document struct {
 	Root *DocumentRoot
 }
 
-// DocumentFromFile reads the specified ATV file from disk.
-func DocumentFromFile(path string) (*Document, error) {
+// FromFile reads the specified ATV file from disk.
+func FromFile(path string) (*Document, error) {
 
 	// open the file for reading
 	file, err := os.Open(path)
@@ -48,11 +48,11 @@ func DocumentFromFile(path string) (*Document, error) {
 	defer file.Close()
 
 	// read the ATV file
-	return DocumentFromReader(file)
+	return FromReader(file)
 }
 
-// DocumentFromReader reads an ATV document from the specified io.Reader.
-func DocumentFromReader(reader io.Reader) (*Document, error) {
+// FromReader reads an ATV document from the specified io.Reader.
+func FromReader(reader io.Reader) (*Document, error) {
 
 	doc := &Document{}
 
@@ -96,12 +96,6 @@ func (doc *Document) parse(data string) error {
 		return err
 	}
 
-	// ensure that the document contains a version pragma
-	_, err = root.GetVersion()
-	if err != nil {
-		return err
-	}
-
 	/*
 		// print the document to the log
 		log.Debugf(
@@ -130,7 +124,7 @@ func (doc *Document) Dupe() *Document {
 		panic("Unexpected error when serializing the ATV document")
 	}
 
-	other, err := DocumentFromReader(&buffer)
+	other, err := FromReader(&buffer)
 	if err != nil {
 		// should not occur...
 		panic("Unexpected error when deserializing the ATV document")
@@ -268,16 +262,6 @@ func (doc *Document) GetPragma(name string) *Pragma {
 	}
 
 	return doc.Root.GetPragma(name)
-}
-
-// GetVersion gets the version of the ATV document.
-func (doc *Document) GetVersion() (*Version, error) {
-
-	if doc == nil {
-		return nil, nil
-	}
-
-	return doc.Root.GetVersion()
 }
 
 // GetRowReferences returns all row references recursively.

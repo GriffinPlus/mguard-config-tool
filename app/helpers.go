@@ -43,7 +43,7 @@ func loadConfigurationFile(path string) (*ecs.Container, error) {
 
 			// try to read ATV container from stdin
 			log.Info("Trying to interpret data as ATV document...")
-			atv, err := atv.DocumentFromReader(bytes.NewBuffer(data))
+			atv, err := atv.FromReader(bytes.NewBuffer(data))
 			if err == nil {
 				log.Info("Reading ATV file succeeded.")
 				container := ecs.ContainerFromATV(atv)
@@ -82,7 +82,7 @@ loop:
 
 		case "atv":
 			log.Infof("Trying to interpret file (%s) as an ATV file...", path)
-			atv, err := atv.DocumentFromFile(path)
+			atv, err := atv.FromFile(path)
 			if err != nil {
 				log.Infof("Reading file (%s) failed: %s", path, err)
 				if os.IsNotExist(err) {

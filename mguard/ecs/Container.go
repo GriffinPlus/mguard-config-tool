@@ -18,7 +18,7 @@ import (
 
 // Container represents a mGuard ECS container.
 type Container struct {
-	Atv       *atv.Document
+	Atv       *atv.File
 	Users     *shadow.File
 	fileCfg   file
 	filePass  file
@@ -47,7 +47,7 @@ func NewContainer() *Container {
 }
 
 // ContainerFromATV wraps an ATV document in an ECS container.
-func ContainerFromATV(atv *atv.Document) *Container {
+func ContainerFromATV(atv *atv.File) *Container {
 
 	container := NewContainer()
 	container.Atv = atv
@@ -128,7 +128,7 @@ func ContainerFromReader(reader io.Reader) (*Container, error) {
 
 	// parse ATV document stored within the ECS container
 	log.Debugf("Parsing configuration file '%s' in ECS container...", container.fileCfg.Name)
-	atv, err := atv.DocumentFromReader(bytes.NewReader(container.fileCfg.Data))
+	atv, err := atv.FromReader(bytes.NewReader(container.fileCfg.Data))
 	if err != nil {
 		log.Debugf("Parsing configuration file '%s' in ECS container failed: %s", container.fileCfg.Name, err)
 		return nil, err

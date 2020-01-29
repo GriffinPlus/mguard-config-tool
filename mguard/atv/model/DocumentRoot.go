@@ -1,10 +1,7 @@
-package atv
+package model
 
 import (
-	"fmt"
 	"reflect"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/alecthomas/participle/lexer"
@@ -72,31 +69,6 @@ func (root *DocumentRoot) GetPragma(name string) *Pragma {
 
 	// pragma with the specified name does not exist
 	return nil
-}
-
-// GetVersion gets the version of the document.
-func (root *DocumentRoot) GetVersion() (*Version, error) {
-
-	versionPragma := root.GetPragma("version")
-	if versionPragma == nil {
-		return nil, fmt.Errorf("The ATV document does not contain a version pragma")
-	}
-
-	versionRegex := regexp.MustCompile(`^([0-9]+)\.([0-9]+)\.([0-9]+)\.(.+)$`)
-	matches := versionRegex.FindAllStringSubmatch(versionPragma.Value, -1)
-	if matches == nil {
-		return nil, fmt.Errorf("The ATV document does not contain a properly formatted version number")
-	}
-
-	major, _ := strconv.Atoi(matches[0][1])
-	minor, _ := strconv.Atoi(matches[0][2])
-	patch, _ := strconv.Atoi(matches[0][3])
-	version := Version{Major: major, Minor: minor, Patch: patch}
-	if len(matches[0]) > 3 {
-		version.Suffix = matches[0][4]
-	}
-
-	return &version, nil
 }
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.

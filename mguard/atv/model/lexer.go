@@ -1,4 +1,4 @@
-package atv
+package model
 
 import (
 	"github.com/alecthomas/participle/lexer"
