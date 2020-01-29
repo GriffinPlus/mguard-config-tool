@@ -31,17 +31,17 @@ func (root *DocumentRoot) Dupe() *DocumentRoot {
 }
 
 // GetRowReferences returns all row references recursively.
-func (root *DocumentRoot) GetRowReferences() []*RowRef {
+func (root *DocumentRoot) GetRowReferences() []RowRef {
 
-	if root == nil {
-		return []*RowRef{}
+	if root != nil {
+		var allRowRefs []RowRef
+		for _, node := range root.Nodes {
+			allRowRefs = append(allRowRefs, node.GetRowReferences()...)
+		}
+		return allRowRefs
 	}
 
-	var allRowRefs []*RowRef
-	for _, node := range root.Nodes {
-		allRowRefs = append(allRowRefs, node.GetRowReferences()...)
-	}
-	return allRowRefs
+	return []RowRef{}
 }
 
 // GetRowIDs returns all row ids recursively.

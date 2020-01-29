@@ -21,7 +21,7 @@ type DocumentWriter interface {
 
 // GetRowReferences is implemented by ATV document setting nodes to return row references recursively.
 type GetRowReferences interface {
-	GetRowReferences() []*RowRef
+	GetRowReferences() []RowRef
 }
 
 // GetRowIDs is implemented by ATV document setting nodes to return row ids recursively.
@@ -140,58 +140,23 @@ func (doc *Document) SetSetting(setting *Setting) error {
 	for _, node := range doc.Root.Nodes {
 		if node.Setting != nil {
 			if node.Setting.Name == copy.Name {
-				if node.Setting.SimpleValue != nil && copy.SimpleValue != nil {
-
-					x := node.Setting.SimpleValue.String()
-					y := copy.SimpleValue.String()
-					if x != y {
-						log.Debugf("Simple value '%s' changed from '%s' to '%s'.", copy.Name, x, y)
+				x := node.Setting.String()
+				y := copy.String()
+				if x != y {
+					log.Debugf("Setting '%s' changed.\nFrom: %s\nTo:   %s", copy.Name, x, y)
+					node.Setting.ClearValue()
+					if copy.SimpleValue != nil {
 						node.Setting.SimpleValue = copy.SimpleValue
-					} else {
-						log.Debugf("Simple value '%s' unchanged. Value is still '%s'.", copy.Name, x)
-					}
-					return nil
-
-				} else if node.Setting.ComplexValue != nil && copy.ComplexValue != nil {
-
-					x := node.Setting.ComplexValue.String()
-					y := copy.ComplexValue.String()
-					if x != y {
-						log.Debugf("Complex value '%s' changed\n--from--\n%s\n--to--\n%s", copy.Name, x, y)
-						node.Setting.ComplexValue = copy.ComplexValue
-					} else {
-						log.Debugf("Complex value '%s' unchanged. Value is still:\n%s", copy.Name, x)
-					}
-					return nil
-
-				} else if node.Setting.RowRef != nil && copy.RowRef != nil {
-
-					x := node.Setting.RowRef.String()
-					y := copy.RowRef.String()
-					if x != y {
-						log.Debugf("RowRef value '%s' changed from '%s' to '%s'.", copy.Name, x, y)
-						node.Setting.RowRef = copy.RowRef
-					} else {
-						log.Debugf("RowRef value '%s' unchanged. Value is still '%s'", copy.Name, x)
-					}
-					return nil
-
-				} else if node.Setting.TableValue != nil && copy.TableValue != nil {
-
-					x := node.Setting.TableValue.String()
-					y := copy.TableValue.String()
-					if x != y {
-						log.Debugf("Table value '%s' changed\n--from--\n%s\n--to--\n%s", copy.Name, x, y)
+					} else if copy.ValueWithMetadata != nil {
+						node.Setting.ValueWithMetadata = copy.ValueWithMetadata
+					} else if copy.TableValue != nil {
 						node.Setting.TableValue = copy.TableValue
-					} else {
-						log.Debugf("Table value '%s' unchanged. Value is still:\n%s", copy.Name, x)
 					}
-					return nil
-
 				} else {
-
-					return fmt.Errorf("Setting variable '%s' failed (type mismatch)", copy.Name)
+					log.Debugf("Setting '%s' unchanged.\nValue: %s", copy.Name, x)
 				}
+
+				return nil
 			}
 		}
 	}
@@ -265,18 +230,15 @@ func (doc *Document) GetPragma(name string) *Pragma {
 }
 
 // GetRowReferences returns all row references recursively.
-func (doc *Document) GetRowReferences() []*RowRef {
+func (doc *Document) GetRowReferences() []RowRef {
 
-	if doc == nil {
-		return []*RowRef{}
+	if doc != nil {
+		var allRowRefs []RowRef
+		for _, node := range doc.Root.Nodes {
+			allRowRefs = append(allRowRefs, node.Setting.GetRowReferences()...)
+		}
 	}
-
-	var allRowRefs []*RowRef
-	for _, node := range doc.Root.Nodes {
-		allRowRefs = append(allRowRefs, node.Setting.GetRowReferences()...)
-	}
-
-	return allRowRefs
+	return []RowRef{}
 }
 
 // GetRowIDs returns all row ids recursively.

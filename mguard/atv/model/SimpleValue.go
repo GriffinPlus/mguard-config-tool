@@ -24,8 +24,8 @@ func (value *SimpleValue) Dupe() *SimpleValue {
 }
 
 // GetRowReferences returns all row references recursively.
-func (value *SimpleValue) GetRowReferences() []*RowRef {
-	return []*RowRef{}
+func (value *SimpleValue) GetRowReferences() []RowRef {
+	return []RowRef{}
 }
 
 // GetRowIDs returns all row ids recursively.
@@ -47,5 +47,5 @@ func (value *SimpleValue) String() string {
 		return "<nil>"
 	}
 
-	return value.Value
+	return strings.TrimSpace(value.Value)
 }

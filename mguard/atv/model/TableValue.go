@@ -33,18 +33,16 @@ func (table *TableValue) Dupe() *TableValue {
 }
 
 // GetRowReferences returns all row references recursively.
-func (table *TableValue) GetRowReferences() []*RowRef {
+func (table *TableValue) GetRowReferences() []RowRef {
 
-	if table == nil {
-		return []*RowRef{}
+	if table != nil {
+		var allRowRefs []RowRef
+		for _, row := range table.Rows {
+			allRowRefs = append(allRowRefs, row.GetRowReferences()...)
+		}
+		return allRowRefs
 	}
-
-	var allRowRefs []*RowRef
-	for _, row := range table.Rows {
-		allRowRefs = append(allRowRefs, row.GetRowReferences()...)
-	}
-
-	return allRowRefs
+	return []RowRef{}
 }
 
 // GetRowIDs returns all row ids recursively.
@@ -100,5 +98,5 @@ func (table *TableValue) String() string {
 
 	builder := strings.Builder{}
 	table.WriteDocumentPart(&builder, 0)
-	return strings.TrimSuffix(builder.String(), "\n")
+	return strings.TrimSpace(builder.String())
 }

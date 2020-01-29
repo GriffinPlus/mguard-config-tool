@@ -27,13 +27,13 @@ func (node *DocumentNode) Dupe() *DocumentNode {
 }
 
 // GetRowReferences returns all row references recursively.
-func (node *DocumentNode) GetRowReferences() []*RowRef {
+func (node *DocumentNode) GetRowReferences() []RowRef {
 
-	if node == nil {
-		return nil
+	if node != nil {
+		return node.Setting.GetRowReferences()
 	}
 
-	return node.Setting.GetRowReferences()
+	return []RowRef{}
 }
 
 // GetRowIDs returns all row ids recursively.

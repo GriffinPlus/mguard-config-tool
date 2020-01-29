@@ -33,18 +33,17 @@ func (row *TableRow) Dupe() *TableRow {
 }
 
 // GetRowReferences returns all row references recursively.
-func (row *TableRow) GetRowReferences() []*RowRef {
+func (row *TableRow) GetRowReferences() []RowRef {
 
-	if row == nil {
-		return []*RowRef{}
+	if row != nil {
+		var allRowRefs []RowRef
+		for _, item := range row.Items {
+			allRowRefs = append(allRowRefs, item.GetRowReferences()...)
+		}
+		return allRowRefs
 	}
 
-	var allRowRefs []*RowRef
-	for _, item := range row.Items {
-		allRowRefs = append(allRowRefs, item.GetRowReferences()...)
-	}
-
-	return allRowRefs
+	return []RowRef{}
 }
 
 // GetRowIDs returns all row ids recursively.
@@ -85,7 +84,7 @@ func (row *TableRow) String() string {
 
 	builder := strings.Builder{}
 	row.WriteDocumentPart(&builder, 0)
-	return strings.TrimSuffix(builder.String(), "\n")
+	return strings.TrimSpace(builder.String())
 }
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
