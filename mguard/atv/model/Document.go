@@ -160,6 +160,8 @@ func (doc *Document) SetSetting(setting *Setting) error {
 						node.Setting.ValueWithMetadata = copy.ValueWithMetadata
 					} else if copy.TableValue != nil {
 						node.Setting.TableValue = copy.TableValue
+					} else {
+						panic("Unhandled value type.")
 					}
 				} else {
 					log.Debugf("Setting '%s' unchanged.\nValue: %s", copy.Name, x)
