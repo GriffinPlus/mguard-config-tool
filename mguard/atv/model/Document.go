@@ -32,6 +32,15 @@ type GetRowIDs interface {
 // RowID is the id of a table row in an ATV document.
 type RowID string
 
+// RowRef represents a reference to a table row.
+type RowRef string
+
+// KeyValuePair represents a pair of two strings.
+type KeyValuePair struct {
+	Key   string `@Ident "="`
+	Value string `@String`
+}
+
 // Document represents a mGuard configuration document.
 type Document struct {
 	Root *DocumentRoot

@@ -9,9 +9,9 @@ import (
 
 // TableValue represents a table value in an ATV document.
 type TableValue struct {
-	Pos  lexer.Position
-	UUID *string     `"{" ( "uuid" "=" @String )?`
-	Rows []*TableRow `@@* "}"`
+	Pos        lexer.Position
+	Attributes []KeyValuePair `"{" @@*`
+	Rows       []*TableRow    `@@* "}"`
 }
 
 // Dupe returns a deep copy of the table value.
@@ -27,8 +27,8 @@ func (table *TableValue) Dupe() *TableValue {
 	}
 
 	return &TableValue{
-		UUID: table.UUID,
-		Rows: rowsCopy,
+		Attributes: table.Attributes,
+		Rows:       rowsCopy,
 	}
 }
 
@@ -69,9 +69,9 @@ func (table *TableValue) WriteDocumentPart(writer *strings.Builder, indent int) 
 		return err
 	}
 
-	// write UUID of the setting, if available
-	if table.UUID != nil {
-		line := fmt.Sprintf("%suuid = \"%s\"\n", spacer(indent+1), *table.UUID)
+	// write key-value-pairs forming the attributes
+	for _, item := range table.Attributes {
+		line := fmt.Sprintf("%s%s = \"%s\"\n", spacer(indent+1), item.Key, item.Value)
 		_, err := writer.WriteString(line)
 		if err != nil {
 			return err

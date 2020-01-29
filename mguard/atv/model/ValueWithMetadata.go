@@ -7,15 +7,6 @@ import (
 	"github.com/alecthomas/participle/lexer"
 )
 
-// KeyValuePair represents a pair of two strings.
-type KeyValuePair struct {
-	Key   string `@Ident "="`
-	Value string `@String`
-}
-
-// RowRef represents a reference to a table row.
-type RowRef string
-
 // ValueWithMetadata represents a value with some metadata attached to it in an ATV document.
 type ValueWithMetadata struct {
 	Pos  lexer.Position
