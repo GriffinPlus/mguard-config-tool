@@ -179,11 +179,11 @@ condition - Condition and/or convert a mGuard configuration file
 ### Subcommand: merge
 
 The `merge` subcommand merges two configuration files into one. The first specified file is taken as the base for the
-result, then the configuration stored in the second file is "stacked" upon the first configuration. Simple values and
-complex values are overwritten and table values (lists) are merged by appending all rows in a table in the second
-configuration to the corresponding table in the first configuration. If the first file is an ATV file, it is implicitly
-converted to an ECS file first. Therefore the resulting ECS container contains default settings for all elements except
-the encorporated mGuard configuration (`/aca/cfg`).
+result, then the configuration stored in the second file is "stacked" upon the first configuration. Simple values are
+overwritten. Table values (lists) are merged depending on their row id. Rows with the same row id are overwritten, other
+rows are appended to the table. If the first file is an ATV file, it is implicitly converted to an ECS file first.
+Therefore the resulting ECS container contains default settings for all elements except the encorporated mGuard
+configuration (`/aca/cfg`).
 
 By default the output of the operation is an ECS container that is written to *stdout*. The output can be written to
 a regular file as well by specifying `--ecs-out` and `--atv-out` appropriately.
