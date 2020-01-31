@@ -15,9 +15,45 @@ import (
 // RowID is the id of a table row in an ATV document.
 type RowID string
 
+// RowRef represents a reference to a table row.
+type RowRef string
+
 // File represents a mGuard configuration file.
 type File struct {
 	doc *model.Document
+}
+
+// Dupe returns a copy of the ATV document.
+func (file *File) Dupe() *File {
+
+	if file == nil {
+		return nil
+	}
+
+	buffer := bytes.Buffer{}
+	err := file.ToWriter(&buffer)
+	if err != nil {
+		// should not occur...
+		panic("Unexpected error when serializing the ATV document")
+	}
+
+	other, err := FromReader(&buffer)
+	if err != nil {
+		// should not occur...
+		panic("Unexpected error when deserializing the ATV document")
+	}
+
+	return other
+}
+
+// String returns a properly formatted string representation of the ATV document.
+func (file *File) String() string {
+
+	if file == nil {
+		return "<nil>"
+	}
+
+	return file.doc.String()
 }
 
 // FromFile reads the specified ATV file from disk.
@@ -54,29 +90,6 @@ func FromReader(reader io.Reader) (*File, error) {
 	return &file, nil
 }
 
-// Dupe returns a copy of the ATV document.
-func (file *File) Dupe() *File {
-
-	if file == nil {
-		return nil
-	}
-
-	buffer := bytes.Buffer{}
-	err := file.ToWriter(&buffer)
-	if err != nil {
-		// should not occur...
-		panic("Unexpected error when serializing the ATV document")
-	}
-
-	other, err := FromReader(&buffer)
-	if err != nil {
-		// should not occur...
-		panic("Unexpected error when deserializing the ATV document")
-	}
-
-	return other
-}
-
 // ToFile saves the ATV document to the specified file.
 func (file *File) ToFile(path string) error {
 
@@ -108,16 +121,6 @@ func (file *File) ToWriter(writer io.Writer) error {
 	return err
 }
 
-// String returns a properly formatted string representation of the ATV document.
-func (file *File) String() string {
-
-	if file == nil {
-		return "<nil>"
-	}
-
-	return file.doc.String()
-}
-
 // GetVersion gets the version of the document.
 func (file *File) GetVersion() (Version, error) {
 
@@ -141,6 +144,26 @@ func (file *File) GetVersion() (Version, error) {
 	}
 
 	return version, nil
+}
+
+// GetRowReferences returns all row references recursively.
+func (file *File) GetRowReferences() []RowRef {
+
+	if file == nil {
+		return []RowRef{}
+	}
+
+	return file.GetRowReferences()
+}
+
+// GetRowIDs returns all row ids recursively.
+func (file *File) GetRowIDs() []RowID {
+
+	if file == nil {
+		return []RowID{}
+	}
+
+	return file.GetRowIDs()
 }
 
 // Merge merges the specified ATV document into the current one.
