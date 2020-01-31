@@ -240,6 +240,16 @@ func (doc *Document) GetPragma(name string) *Pragma {
 	return doc.Root.GetPragma(name)
 }
 
+// SetPragma sets the pragma with the specified name.
+func (doc *Document) SetPragma(name string, value string) *Pragma {
+
+	if doc == nil {
+		return nil
+	}
+
+	return doc.Root.SetPragma(name, value)
+}
+
 // GetRowReferences returns all row references recursively.
 func (doc *Document) GetRowReferences() []RowRef {
 

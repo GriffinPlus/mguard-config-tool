@@ -166,6 +166,32 @@ func (file *File) GetRowIDs() []RowID {
 	return file.GetRowIDs()
 }
 
+// GetPragma returns the value of the pragma with the specified name.
+func (file *File) GetPragma(name string) *string {
+
+	if file == nil {
+		return nil
+	}
+
+	pragma := file.doc.GetPragma(name)
+	if pragma != nil {
+		copy := string([]byte(pragma.Value)) // avoids referencing string in model
+		return &copy
+	}
+
+	return nil
+}
+
+// SetPragma sets the value of the pragma with the specified name.
+func (file *File) SetPragma(name string, value string) {
+
+	if file == nil {
+		return
+	}
+
+	file.doc.SetPragma(name, value)
+}
+
 // Merge merges the specified ATV document into the current one.
 func (file *File) Merge(other *File) (*File, error) {
 	merged, err := file.doc.Merge(other.doc)

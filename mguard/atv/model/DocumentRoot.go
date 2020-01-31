@@ -61,6 +61,11 @@ func (root *DocumentRoot) GetRowIDs() []RowID {
 
 // GetPragma gets the pragma with the specified name.
 func (root *DocumentRoot) GetPragma(name string) *Pragma {
+
+	if root == nil {
+		return nil
+	}
+
 	for _, node := range root.Nodes {
 		if node.Pragma != nil && node.Pragma.Name == name {
 			return node.Pragma
@@ -69,6 +74,35 @@ func (root *DocumentRoot) GetPragma(name string) *Pragma {
 
 	// pragma with the specified name does not exist
 	return nil
+}
+
+// SetPragma sets the pragma with the specified name.
+func (root *DocumentRoot) SetPragma(name string, value string) *Pragma {
+
+	if root == nil {
+		return nil
+	}
+
+	for _, node := range root.Nodes {
+		if node.Pragma != nil && node.Pragma.Name == name {
+			node.Pragma.Value = value
+			return node.Pragma
+		}
+	}
+
+	// pragma with the specified name does not exist
+	// => add it after the last pragma (there is always at least a version pragma)
+	lastPragmaIndex := -1
+	for i, node := range root.Nodes {
+		if node.Pragma != nil {
+			lastPragmaIndex = i
+		}
+	}
+	root.Nodes = append(root.Nodes, nil)
+	copy(root.Nodes[lastPragmaIndex+2:], root.Nodes[lastPragmaIndex+1:])
+	pragma := &Pragma{Name: name, Value: value}
+	root.Nodes[lastPragmaIndex+1] = &DocumentNode{Pragma: pragma}
+	return pragma
 }
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
