@@ -1,4 +1,4 @@
-package model
+package atv
 
 import (
 	"strings"
@@ -6,28 +6,28 @@ import (
 	"github.com/alecthomas/participle/lexer"
 )
 
-// DocumentNode represents an element in an ATV configuration document.
-type DocumentNode struct {
+// documentNode represents an element in an ATV configuration document.
+type documentNode struct {
 	Pos     lexer.Position
-	Pragma  *Pragma  `( @Pragma` // needs extra conditioning step
-	Setting *Setting `| @@)`
+	Pragma  *documentPragma  `( @Pragma` // needs extra conditioning step
+	Setting *documentSetting `| @@)`
 }
 
 // Dupe returns a copy of the document node.
-func (node *DocumentNode) Dupe() *DocumentNode {
+func (node *documentNode) Dupe() *documentNode {
 
 	if node == nil {
 		return nil
 	}
 
-	return &DocumentNode{
+	return &documentNode{
 		Pragma:  node.Pragma.Dupe(),
 		Setting: node.Setting.Dupe(),
 	}
 }
 
 // GetRowReferences returns all row references recursively.
-func (node *DocumentNode) GetRowReferences() []RowRef {
+func (node *documentNode) GetRowReferences() []RowRef {
 
 	if node != nil {
 		return node.Setting.GetRowReferences()
@@ -37,7 +37,7 @@ func (node *DocumentNode) GetRowReferences() []RowRef {
 }
 
 // GetRowIDs returns all row ids recursively.
-func (node *DocumentNode) GetRowIDs() []RowID {
+func (node *documentNode) GetRowIDs() []RowID {
 
 	if node == nil {
 		return []RowID{}
@@ -48,7 +48,7 @@ func (node *DocumentNode) GetRowIDs() []RowID {
 
 // actual returns the actual node as DocumentNode itself is a node only encapsulating
 // other nodes without being part of the document.
-func (node *DocumentNode) actual() DocumentWriter {
+func (node *documentNode) actual() documentWriter {
 
 	if node.Pragma != nil {
 		return node.Pragma
@@ -62,9 +62,9 @@ func (node *DocumentNode) actual() DocumentWriter {
 }
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
-func (node *DocumentNode) WriteDocumentPart(writer *strings.Builder, indent int) error {
+func (node *documentNode) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
-	children := []DocumentWriter{
+	children := []documentWriter{
 		node.Pragma,
 		node.Setting,
 	}
