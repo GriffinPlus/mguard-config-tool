@@ -8,19 +8,11 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
-
-	"github.com/griffinplus/mguard-config-tool/mguard/atv/model"
 )
-
-// RowID is the id of a table row in an ATV document.
-type RowID string
-
-// RowRef represents a reference to a table row.
-type RowRef string
 
 // File represents a mGuard configuration file.
 type File struct {
-	doc *model.Document
+	doc *document
 }
 
 // Dupe returns a copy of the ATV document.
@@ -73,7 +65,7 @@ func FromFile(path string) (*File, error) {
 // FromReader reads an ATV document from the specified io.Reader.
 func FromReader(reader io.Reader) (*File, error) {
 
-	doc, err := model.FromReader(reader)
+	doc, err := documentFromReader(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -92,6 +84,10 @@ func FromReader(reader io.Reader) (*File, error) {
 
 // ToFile saves the ATV document to the specified file.
 func (file *File) ToFile(path string) error {
+
+	if file == nil {
+		return ErrNilReceiver
+	}
 
 	// create directories on the way, if necessary
 	path, err := filepath.Abs(path)
@@ -116,6 +112,11 @@ func (file *File) ToFile(path string) error {
 
 // ToWriter writes the ATV document to the specified io.Writer.
 func (file *File) ToWriter(writer io.Writer) error {
+
+	if file == nil {
+		return ErrNilReceiver
+	}
+
 	content := file.String()
 	_, err := writer.Write([]byte(content))
 	return err
@@ -124,7 +125,14 @@ func (file *File) ToWriter(writer io.Writer) error {
 // GetVersion gets the version of the document.
 func (file *File) GetVersion() (Version, error) {
 
-	versionPragma := file.doc.GetPragma("version")
+	if file == nil {
+		return Version{}, ErrNilReceiver
+	}
+
+	versionPragma, err := file.doc.GetPragma("version")
+	if err != nil {
+		return Version{}, err
+	}
 	if versionPragma == nil {
 		return Version{}, fmt.Errorf("The ATV document does not contain a version pragma")
 	}
@@ -147,49 +155,124 @@ func (file *File) GetVersion() (Version, error) {
 }
 
 // GetRowReferences returns all row references recursively.
-func (file *File) GetRowReferences() []RowRef {
+func (file *File) GetRowReferences() ([]RowRef, error) {
 
 	if file == nil {
-		return []RowRef{}
+		return nil, ErrNilReceiver
 	}
 
-	return file.GetRowReferences()
+	return file.doc.GetRowReferences(), nil
 }
 
 // GetRowIDs returns all row ids recursively.
-func (file *File) GetRowIDs() []RowID {
+func (file *File) GetRowIDs() ([]RowID, error) {
 
 	if file == nil {
-		return []RowID{}
+		return nil, ErrNilReceiver
 	}
 
-	return file.GetRowIDs()
+	return file.doc.GetRowIDs(), nil
 }
 
 // GetPragma returns the value of the pragma with the specified name.
-func (file *File) GetPragma(name string) *string {
+func (file *File) GetPragma(name string) (*string, error) {
 
 	if file == nil {
-		return nil
+		return nil, ErrNilReceiver
 	}
 
-	pragma := file.doc.GetPragma(name)
+	pragma, err := file.doc.GetPragma(name)
 	if pragma != nil {
-		copy := string([]byte(pragma.Value)) // avoids referencing string in model
-		return &copy
+		return &pragma.Value, err
 	}
 
-	return nil
+	return nil, nil
 }
 
 // SetPragma sets the value of the pragma with the specified name.
-func (file *File) SetPragma(name string, value string) {
+func (file *File) SetPragma(name string, value string) error {
 
 	if file == nil {
-		return
+		return ErrNilReceiver
 	}
 
-	file.doc.SetPragma(name, value)
+	_, err := file.doc.SetPragma(name, value)
+	return err
+}
+
+// GetUUID gets the UUID of the setting with the specified name.
+func (file *File) GetUUID(name string) (*UUID, error) {
+
+	if file == nil {
+		return nil, ErrNilReceiver
+	}
+
+	return file.doc.GetUUID(name)
+}
+
+// SetUUID sets the UUID of the setting with the specified name.
+func (file *File) SetUUID(name string, uuid UUID) error {
+
+	if file == nil {
+		return ErrNilReceiver
+	}
+
+	return file.doc.SetUUID(name, uuid)
+}
+
+// RemoveUUID removes the UUID of the setting with the specified name.
+func (file *File) RemoveUUID(name string) error {
+
+	if file == nil {
+		return ErrNilReceiver
+	}
+
+	return file.doc.RemoveUUID(name)
+}
+
+// GetAccess gets the access modifier of the setting with the specified name.
+func (file *File) GetAccess(name string) (*AccessModifier, error) {
+
+	if file == nil {
+		return nil, ErrNilReceiver
+	}
+
+	return file.doc.GetAccess(name)
+}
+
+// SetAccess sets the access modifier of the setting with the specified name.
+func (file *File) SetAccess(name string, access AccessModifier) error {
+
+	if file == nil {
+		return ErrNilReceiver
+	}
+
+	return file.doc.SetAccess(name, access)
+}
+
+// RemoveAccess removes the access modifier of the setting with the specified name.
+func (file *File) RemoveAccess(name string) error {
+
+	if file == nil {
+		return ErrNilReceiver
+	}
+
+	return file.doc.RemoveAccess(name)
+}
+
+// GetSetting gets the setting with the specified name.
+func (file *File) GetSetting(settingName string) (string, error) {
+
+	if file == nil {
+		return "", ErrNilReceiver
+	}
+
+	setting, err := file.doc.GetSetting(settingName)
+	if err != nil {
+		return "", err
+	}
+
+	return setting.String(), nil
 }
 
 // Merge merges the specified ATV document into the current one.

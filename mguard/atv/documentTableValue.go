@@ -1,4 +1,4 @@
-package model
+package atv
 
 import (
 	"fmt"
@@ -7,33 +7,33 @@ import (
 	"github.com/alecthomas/participle/lexer"
 )
 
-// TableValue represents a table value in an ATV document.
-type TableValue struct {
+// documentTableValue represents a table value in an ATV document.
+type documentTableValue struct {
 	Pos        lexer.Position
-	Attributes []KeyValuePair `"{" @@*`
-	Rows       []*TableRow    `@@* "}"`
+	Attributes dictionary          `"{" @@*`
+	Rows       []*documentTableRow `@@* "}"`
 }
 
 // Dupe returns a deep copy of the table value.
-func (table *TableValue) Dupe() *TableValue {
+func (table *documentTableValue) Dupe() *documentTableValue {
 
 	if table == nil {
 		return nil
 	}
 
-	var rowsCopy []*TableRow
+	var rowsCopy []*documentTableRow
 	for _, row := range table.Rows {
 		rowsCopy = append(rowsCopy, row.Dupe())
 	}
 
-	return &TableValue{
+	return &documentTableValue{
 		Attributes: table.Attributes,
 		Rows:       rowsCopy,
 	}
 }
 
 // GetRowReferences returns all row references recursively.
-func (table *TableValue) GetRowReferences() []RowRef {
+func (table *documentTableValue) GetRowReferences() []RowRef {
 
 	if table != nil {
 		var allRowRefs []RowRef
@@ -46,22 +46,20 @@ func (table *TableValue) GetRowReferences() []RowRef {
 }
 
 // GetRowIDs returns all row ids recursively.
-func (table *TableValue) GetRowIDs() []RowID {
+func (table *documentTableValue) GetRowIDs() []RowID {
 
-	if table == nil {
-		return []RowID{}
+	if table != nil {
+		var allRowIDs []RowID
+		for _, row := range table.Rows {
+			allRowIDs = append(allRowIDs, row.GetRowIDs()...)
+		}
+		return allRowIDs
 	}
-
-	var allRowIDs []RowID
-	for _, row := range table.Rows {
-		allRowIDs = append(allRowIDs, row.GetRowIDs()...)
-	}
-
-	return allRowIDs
+	return []RowID{}
 }
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
-func (table *TableValue) WriteDocumentPart(writer *strings.Builder, indent int) error {
+func (table *documentTableValue) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
 	// write opening brace for table
 	_, err := writer.WriteString("{\n")
@@ -90,7 +88,7 @@ func (table *TableValue) WriteDocumentPart(writer *strings.Builder, indent int) 
 }
 
 // String returns the table value as a string.
-func (table *TableValue) String() string {
+func (table *documentTableValue) String() string {
 
 	if table == nil {
 		return "<nil>"

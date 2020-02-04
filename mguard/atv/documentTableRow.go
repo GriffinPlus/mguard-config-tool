@@ -1,4 +1,4 @@
-package model
+package atv
 
 import (
 	"fmt"
@@ -7,39 +7,41 @@ import (
 	"github.com/alecthomas/participle/lexer"
 )
 
-// TableRow represents a table row in an ATV document.
-type TableRow struct {
+// documentTableRow represents a table row in an ATV document.
+type documentTableRow struct {
 	Pos   lexer.Position
-	RowID *RowID     `"{" ( "{" "rid" "=" @String "}" )?`
-	Items []*Setting `@@* "}"`
+	RowID *RowID             `"{" ( "{" "rid" "=" @String "}" )?`
+	Items []*documentSetting `@@* "}"`
 }
 
 // Dupe returns a deep copy of the table row.
-func (row *TableRow) Dupe() *TableRow {
+func (row *documentTableRow) Dupe() *documentTableRow {
 
 	if row == nil {
 		return nil
 	}
 
-	var itemsCopy []*Setting
+	var itemsCopy []*documentSetting
 	for _, setting := range row.Items {
 		itemsCopy = append(itemsCopy, setting.Dupe())
 	}
 
-	return &TableRow{
+	return &documentTableRow{
 		RowID: row.RowID,
 		Items: itemsCopy,
 	}
 }
 
 // GetRowReferences returns all row references recursively.
-func (row *TableRow) GetRowReferences() []RowRef {
+func (row *documentTableRow) GetRowReferences() []RowRef {
 
 	if row != nil {
+
 		var allRowRefs []RowRef
 		for _, item := range row.Items {
 			allRowRefs = append(allRowRefs, item.GetRowReferences()...)
 		}
+
 		return allRowRefs
 	}
 
@@ -47,36 +49,37 @@ func (row *TableRow) GetRowReferences() []RowRef {
 }
 
 // GetRowIDs returns all row ids recursively.
-func (row *TableRow) GetRowIDs() []RowID {
+func (row *documentTableRow) GetRowIDs() []RowID {
 
-	if row == nil {
-		return []RowID{}
+	if row != nil {
+
+		var allRowIDs []RowID
+		if row.RowID != nil {
+			allRowIDs = append(allRowIDs, *row.RowID)
+		}
+
+		for _, item := range row.Items {
+			allRowIDs = append(allRowIDs, item.GetRowIDs()...)
+		}
+
+		return allRowIDs
 	}
 
-	var allRowIDs []RowID
-	if row.RowID != nil {
-		allRowIDs = append(allRowIDs, *row.RowID)
-	}
-
-	for _, item := range row.Items {
-		allRowIDs = append(allRowIDs, item.GetRowIDs()...)
-	}
-
-	return allRowIDs
+	return []RowID{}
 }
 
 // HasID checks whether the row has a row id.
-func (row *TableRow) HasID() bool {
+func (row *documentTableRow) HasID() bool {
 	return row != nil && row.RowID != nil
 }
 
 // HasSameID checks whether the current row and the specified one has the same row id.
-func (row *TableRow) HasSameID(other *TableRow) bool {
+func (row *documentTableRow) HasSameID(other *documentTableRow) bool {
 	return row != nil && other != nil && row.RowID != nil && other.RowID != nil && row.RowID == other.RowID
 }
 
 // String returns the table row as a string.
-func (row *TableRow) String() string {
+func (row *documentTableRow) String() string {
 
 	if row == nil {
 		return "<nil>"
@@ -88,7 +91,7 @@ func (row *TableRow) String() string {
 }
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
-func (row *TableRow) WriteDocumentPart(writer *strings.Builder, indent int) error {
+func (row *documentTableRow) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
 	// write opening brace of the table row
 	line := fmt.Sprintf("%s{\n", spacer(indent))

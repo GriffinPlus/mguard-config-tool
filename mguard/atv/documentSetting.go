@@ -1,4 +1,4 @@
-package model
+package atv
 
 import (
 	"fmt"
@@ -7,23 +7,23 @@ import (
 	"github.com/alecthomas/participle/lexer"
 )
 
-// Setting represents a setting node in an ATV document.
-type Setting struct {
+// documentSetting represents a setting node in an ATV document.
+type documentSetting struct {
 	Pos               lexer.Position
-	Name              string             `@Ident "="`
-	SimpleValue       *SimpleValue       `( @@`
-	TableValue        *TableValue        `| @@`
-	ValueWithMetadata *ValueWithMetadata `| @@ )`
+	Name              string                     `@Ident "="`
+	SimpleValue       *documentSimpleValue       `( @@`
+	TableValue        *documentTableValue        `| @@`
+	ValueWithMetadata *documentValueWithMetadata `| @@ )`
 }
 
 // Dupe returns a deep copy of the setting.
-func (setting *Setting) Dupe() *Setting {
+func (setting *documentSetting) Dupe() *documentSetting {
 
 	if setting == nil {
 		return nil
 	}
 
-	var copy = &Setting{Name: setting.Name}
+	var copy = &documentSetting{Name: setting.Name}
 	if setting.SimpleValue != nil {
 		copy.SimpleValue = setting.SimpleValue.Dupe()
 	} else if setting.ValueWithMetadata != nil {
@@ -38,7 +38,7 @@ func (setting *Setting) Dupe() *Setting {
 }
 
 // ClearValue sets the value of all setting value types to nil (only one of them should be initialized).
-func (setting *Setting) ClearValue() {
+func (setting *documentSetting) ClearValue() {
 
 	if setting == nil {
 		return
@@ -50,7 +50,7 @@ func (setting *Setting) ClearValue() {
 }
 
 // String returns the setting as a string.
-func (setting *Setting) String() string {
+func (setting *documentSetting) String() string {
 
 	if setting == nil {
 		return "<nil>"
@@ -66,7 +66,7 @@ func (setting *Setting) String() string {
 }
 
 // MergeInto merges the current setting into the specified document.
-func (setting *Setting) mergeInto(doc *Document, parentName string) error {
+func (setting *documentSetting) mergeInto(doc *document, parentName string) error {
 
 	if setting == nil {
 		return nil
@@ -93,38 +93,76 @@ func (setting *Setting) mergeInto(doc *Document, parentName string) error {
 }
 
 // GetRowReferences returns all row references recursively.
-func (setting *Setting) GetRowReferences() []RowRef {
+func (setting *documentSetting) GetRowReferences() []RowRef {
 
 	if setting != nil {
 		var allRowRefs []RowRef
-		parts := []GetRowReferences{setting.SimpleValue, setting.ValueWithMetadata, setting.TableValue}
+		parts := []getRowReferences{setting.SimpleValue, setting.ValueWithMetadata, setting.TableValue}
 		for _, part := range parts {
 			allRowRefs = append(allRowRefs, part.GetRowReferences()...)
 		}
 		return allRowRefs
 	}
-
 	return []RowRef{}
 }
 
 // GetRowIDs returns all row ids recursively.
-func (setting *Setting) GetRowIDs() []RowID {
+func (setting *documentSetting) GetRowIDs() []RowID {
 
-	if setting == nil {
-		return []RowID{}
+	if setting != nil {
+		var allRowIDs []RowID
+		parts := []getRowIDs{setting.SimpleValue, setting.ValueWithMetadata, setting.TableValue}
+		for _, part := range parts {
+			allRowIDs = append(allRowIDs, part.GetRowIDs()...)
+		}
+		return allRowIDs
+	}
+	return []RowID{}
+}
+
+// getSetting gets the setting at the specified path.
+// If the setting does not exist, nil is returned.
+func (setting *documentSetting) getSetting(path documentSettingPath, index int) (*documentSetting, error) {
+
+	// abort, if the setting is found
+	if index == len(path) {
+		return setting, nil
 	}
 
-	var allRowIDs []RowID
-	parts := []GetRowIDs{setting.SimpleValue, setting.ValueWithMetadata, setting.TableValue}
-	for _, part := range parts {
-		allRowIDs = append(allRowIDs, part.GetRowIDs()...)
+	if setting.SimpleValue != nil || setting.ValueWithMetadata != nil {
+		return nil, fmt.Errorf("Setting '%s' is a single value, but the path '%s' specifies a more nested setting", path[0:index], path)
 	}
 
-	return allRowIDs
+	if setting.TableValue != nil {
+
+		if path[index].row == nil {
+			return nil, fmt.Errorf("Setting '%s' is a table value, but the path '%s' does not address a specific row", path[0:index], path)
+		}
+
+		if index+1 == len(path) {
+			return nil, fmt.Errorf("Setting '%s' is a table value, but the path '%s' does not address a value within a row", path[0:index], path)
+		}
+
+		rowIndex := *path[index].row
+		if rowIndex >= len(setting.TableValue.Rows) {
+			return nil, nil
+		}
+
+		row := setting.TableValue.Rows[rowIndex]
+		for _, item := range row.Items {
+			if item.Name == *path[index+1].name {
+				return item.getSetting(path, index+2)
+			}
+		}
+
+		return nil, nil
+	}
+
+	panic("Unhandled setting type")
 }
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
-func (setting *Setting) WriteDocumentPart(writer *strings.Builder, indent int) error {
+func (setting *documentSetting) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
 	// write the name of the setting
 	line := fmt.Sprintf("%s%s = ", spacer(indent), setting.Name)
@@ -134,7 +172,7 @@ func (setting *Setting) WriteDocumentPart(writer *strings.Builder, indent int) e
 	}
 
 	// write the setting value
-	parts := []DocumentWriter{setting.SimpleValue, setting.ValueWithMetadata, setting.TableValue}
+	parts := []documentWriter{setting.SimpleValue, setting.ValueWithMetadata, setting.TableValue}
 	for _, part := range parts {
 
 		if !isNil(part) {

@@ -1,4 +1,4 @@
-package model
+package atv
 
 import (
 	"fmt"
@@ -7,32 +7,31 @@ import (
 	"github.com/alecthomas/participle/lexer"
 )
 
-// ValueWithMetadata represents a value with some metadata attached to it in an ATV document.
-type ValueWithMetadata struct {
+// documentValueWithMetadata represents a value with some metadata attached to it in an ATV document.
+type documentValueWithMetadata struct {
 	Pos  lexer.Position
-	Data []KeyValuePair `"{" @@* "}"`
+	Data dictionary `"{" @@* "}"`
 }
 
 // Dupe returns a copy of the value.
-func (value *ValueWithMetadata) Dupe() *ValueWithMetadata {
+func (value *documentValueWithMetadata) Dupe() *documentValueWithMetadata {
 
 	if value == nil {
 		return nil
 	}
 
-	return &ValueWithMetadata{
+	return &documentValueWithMetadata{
 		Data: value.Data,
 	}
 }
 
 // GetRowReferences returns all row references recursively.
-func (value *ValueWithMetadata) GetRowReferences() []RowRef {
+func (value *documentValueWithMetadata) GetRowReferences() []RowRef {
 
 	if value != nil {
-		for _, item := range value.Data {
-			if item.Key == "rowref" {
-				return []RowRef{RowRef(item.Value)}
-			}
+		var rowref string
+		if value.Data.TryGet("rowref", &rowref) {
+			return []RowRef{RowRef(rowref)}
 		}
 	}
 
@@ -40,12 +39,12 @@ func (value *ValueWithMetadata) GetRowReferences() []RowRef {
 }
 
 // GetRowIDs returns all row ids recursively.
-func (value *ValueWithMetadata) GetRowIDs() []RowID {
+func (value *documentValueWithMetadata) GetRowIDs() []RowID {
 	return []RowID{}
 }
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
-func (value *ValueWithMetadata) WriteDocumentPart(writer *strings.Builder, indent int) error {
+func (value *documentValueWithMetadata) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
 	// write opening brace of the complex type
 	_, err := writer.WriteString("{\n")
@@ -73,7 +72,7 @@ func (value *ValueWithMetadata) WriteDocumentPart(writer *strings.Builder, inden
 }
 
 // String returns the complex value as a string.
-func (value *ValueWithMetadata) String() string {
+func (value *documentValueWithMetadata) String() string {
 	builder := strings.Builder{}
 	value.WriteDocumentPart(&builder, 0)
 	return strings.TrimSpace(builder.String())
