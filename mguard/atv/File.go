@@ -154,6 +154,18 @@ func (file *File) GetVersion() (Version, error) {
 	return version, nil
 }
 
+// SetVersion sets the version of the document.
+// This should only be done after a migration step to keep the document structure and the version number consistent.
+func (file *File) SetVersion(version Version) error {
+
+	if file == nil {
+		return ErrNilReceiver
+	}
+
+	_, err := file.doc.SetPragma("version", version.String())
+	return err
+}
+
 // GetRowReferences returns all row references recursively.
 func (file *File) GetRowReferences() ([]RowRef, error) {
 
