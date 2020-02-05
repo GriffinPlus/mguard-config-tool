@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 
 	"github.com/integrii/flaggy"
@@ -70,6 +71,12 @@ func (cmd *MergeCommand) ExecuteCommand() error {
 		return err
 	}
 
+	// determine the version of the first file
+	version1, err := ecs1.Atv.GetVersion()
+	if err != nil {
+		return err
+	}
+
 	// load the second file (can be ATV or ECS)
 	// (the configuration is always loaded into an ECS container, missing parts are filled with defaults)
 	ecs2, err := loadConfigurationFile(cmd.inFilePath2)
@@ -77,8 +84,28 @@ func (cmd *MergeCommand) ExecuteCommand() error {
 		return err
 	}
 
+	// determine the version of the second file
+	version2, err := ecs2.Atv.GetVersion()
+	if err != nil {
+		return err
+	}
+
+	// ensure that the first file has the same or a higher version than the second file
+	if version1.Compare(version2) < 0 {
+		return fmt.Errorf(
+			"The first file (%s, version: %s) must have the same or a higher version than the second file (%s, version: %s)",
+			cmd.inFilePath1, version1,
+			cmd.inFilePath2, version2)
+	}
+
+	// migrate second file to the version of the first file, if necessary
+	atv2, err := ecs2.Atv.Migrate(version1)
+	if err != nil {
+		return err
+	}
+
 	// merge the configuration stored in both ECS containers
-	mergedAtv, err := ecs1.Atv.Merge(ecs2.Atv)
+	mergedAtv, err := ecs1.Atv.Merge(atv2)
 	if err != nil {
 		return err
 	}

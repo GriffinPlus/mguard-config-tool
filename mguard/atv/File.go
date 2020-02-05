@@ -295,3 +295,60 @@ func (file *File) Merge(other *File) (*File, error) {
 	}
 	return &File{doc: merged}, nil
 }
+
+// Migrate migrates the ATV file to the specified version (upwards only).
+func (file *File) Migrate(targetVersion Version) (*File, error) {
+
+	if file == nil {
+		return nil, ErrNilReceiver
+	}
+
+	currentVersion, err := file.GetVersion()
+	if err != nil {
+		return nil, err
+	}
+
+	if currentVersion.Compare(targetVersion) > 0 {
+		return nil, fmt.Errorf("Current atv document version (%s) must not be greater than the target version (%s)", currentVersion, targetVersion)
+	}
+
+	// migrations in ascending order
+	migrations := []migrationProvider{
+		migration_7_5_0_to_8_0_2{},
+		migration_8_0_2_to_8_1_0{},
+		migration_8_1_0_to_8_8_1{},
+	}
+
+	// run migrations
+	current := file.Dupe()
+	for _, migration := range migrations {
+
+		// abort, if the migration would lead to a higher version number than specified
+		if migration.ToVersion().Compare(targetVersion) > 0 {
+			break
+		}
+
+		// get version of the current document
+		currentVersion, err = current.GetVersion()
+		if err != nil {
+			return nil, err
+		}
+
+		// migrate
+		current, err = migration.Migrate(current)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// check whether the target version was reached
+	currentVersion, err = current.GetVersion()
+	if err != nil {
+		return nil, err
+	}
+	if currentVersion.Compare(targetVersion) != 0 {
+		return nil, fmt.Errorf("Migration failed, could not reach target version (%s)", targetVersion)
+	}
+
+	return current, nil
+}
