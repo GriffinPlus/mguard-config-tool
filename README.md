@@ -185,6 +185,12 @@ rows are appended to the table. If the first file is an ATV file, it is implicit
 Therefore the resulting ECS container contains default settings for all elements except the encorporated mGuard
 configuration (`/aca/cfg`).
 
+If the second configuration file has a lower version than the first one, the *mGuard-Config-Tool* trys to migrate the
+second configuration up to the version of the first configuration file. If the second configuration file has a higher
+version than the first configuration file, merging will be aborted. The migrations are implemented in all conscience,
+but they are not complete. The merged configuration must be tested thoroughly before bringing it in production. Please
+also see the known limitations below.
+
 By default the output of the operation is an ECS container that is written to *stdout*. The output can be written to
 a regular file as well by specifying `--ecs-out` and `--atv-out` appropriately.
 
@@ -265,14 +271,17 @@ output:
     path: ./data/output-update-packages       # directory: update packages with firmware and the merged configuration are put here
 ```
 
-The configured directories are created, if necessary and permissions allow that. Before the service can run, the base configuration
-file and the firmware files must be provided in the configured directories. If the base configuration is missing, the service
-will fail to start. If the sdcard template is missing, the generated packages will not contain any firmware files - only the merged
-configuration.
+The configured directories are created, if necessary and permissions allow that. Before the service can run, the base
+configuration file and the firmware files must be provided in the configured directories. If the base configuration is
+missing, the service will fail to start. If the sdcard template is missing, the generated packages will not contain any
+firmware files - only the merged configuration.
 
 ## Known Limitations
 
 - Comments: Reading a configuration file discards comments, so a written configuration file does not contain any comments.
+- Migrations: Only a selection of migrations is implemented to make our own usecases work. The lack on documentation about
+  ATV documents and migrations forced us to deduce needed migration steps from observed behavior. If you discover further
+  steps that are needed to migrate from one version to another, please let us know by opening an issue.
 
 ## Issues and Contributions
 
