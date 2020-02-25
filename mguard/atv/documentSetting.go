@@ -161,6 +161,25 @@ func (setting *documentSetting) getSetting(path documentSettingPath, index int) 
 	panic("Unhandled setting type")
 }
 
+// GetValue gets the value of the setting, if the setting is a simple value - with or without metadata.
+// If the setting has a table value, an error is returned.
+func (setting *documentSetting) GetValue() (string, error) {
+
+	if setting.SimpleValue != nil {
+		return setting.SimpleValue.Value, nil
+	}
+
+	if setting.ValueWithMetadata != nil {
+		var value string
+		if setting.ValueWithMetadata.Data.TryGet("value", &value) {
+			return value, nil
+		}
+		return "", fmt.Errorf("The setting does not contain a value")
+	}
+
+	return "", fmt.Errorf("The setting is not a single value")
+}
+
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
 func (setting *documentSetting) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
