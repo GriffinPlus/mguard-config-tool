@@ -13,7 +13,7 @@ variables:
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
   GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
   GOROOT: '$(Agent.BuildDirectory)/go' # Go installation path
-  GOVERSION: '1.13.3'
+  GOVERSION: '1.14'
   modulePath: '$(GOPATH)/src/github.com/griffinplus/mguard-config-tool' # Path to the module's code
 
 steps:
