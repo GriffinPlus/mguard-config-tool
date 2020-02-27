@@ -495,7 +495,7 @@ func (doc *document) Merge(other *document) (*document, error) {
 
 	copy := doc.Dupe()
 	for _, otherNode := range other.Nodes {
-		err := otherNode.Setting.mergeInto(copy, "")
+		err := otherNode.Setting.mergeInto(copy)
 		if err != nil {
 			return nil, err
 		}

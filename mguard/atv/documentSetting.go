@@ -65,8 +65,8 @@ func (setting *documentSetting) String() string {
 	return strings.TrimSpace(builder.String())
 }
 
-// MergeInto merges the current setting into the specified document.
-func (setting *documentSetting) mergeInto(doc *document, parentName string) error {
+// mergeInto merges the current setting into the specified document.
+func (setting *documentSetting) mergeInto(doc *document) error {
 
 	if setting == nil {
 		return nil
