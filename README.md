@@ -1,7 +1,7 @@
 # mguard-config-tool
 
 [![Build Status](https://dev.azure.com/griffinplus/mGuard-Config-Tool/_apis/build/status/mguard-config-tool?branchName=master)](https://dev.azure.com/griffinplus/mGuard-Config-Tool/_build/latest?definitionId=16&branchName=master)
-[![Release](https://img.shields.io/github/release/griffinplus/mguard-config-tool.svg?logo=github)](https://github.com/GriffinPlus/mguard-config-tool/releases)
+[![Release](https://img.shields.io/github/release/griffinplus/mguard-config-tool.svg?logo=github&label=Release)](https://github.com/GriffinPlus/mguard-config-tool/releases)
 
 -----
 
