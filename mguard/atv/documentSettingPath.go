@@ -16,7 +16,7 @@ type documentSettingPathToken struct {
 // documentSettingPath represents a parsed setting path.
 type documentSettingPath []documentSettingPathToken
 
-var settingNameRegex = regexp.MustCompile(`^[A-Z_]+$`)
+var settingNameRegex = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
 var tableRowAccessRegex = regexp.MustCompile(`^[0-9]+$`)
 
 // parseDocumentSettingPath parses the specified string and returns the corresponding tokens.
