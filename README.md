@@ -191,6 +191,11 @@ version than the first configuration file, merging will be aborted. The migratio
 but they are not complete. The merged configuration must be tested thoroughly before bringing it in production. Please
 also see the known limitations below.
 
+By default all settings are merged from the second configuration into the first configuration. Optionally you can merge
+selectively by specifying a merge configuration using `--config`. The merge configuration is just a list of settings
+that should be merged. At present only top-level settings are supported. Everything behind a `#` character is treated
+as a comment ([example](./app/data/configs/mguard-secure-cloud.merge)).
+
 By default the output of the operation is an ECS container that is written to *stdout*. The output can be written to
 a regular file as well by specifying `--ecs-out` and `--atv-out` appropriately.
 
@@ -207,6 +212,7 @@ merge - Merge two mGuard configuration files into one
   Flags: 
        --version   Displays the program version string.
     -h --help      Displays help with available flag, subcommand, and positional value parameters.
+       --config    Merge configuration file
        --atv-out   File receiving the merged configuration (ATV format, instead of stdout)
        --ecs-out   File receiving the merged configuration (ECS container, instead of stdout)
        --verbose   Include additional messages that might help when problems occur.

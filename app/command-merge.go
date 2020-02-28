@@ -5,17 +5,20 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/griffinplus/mguard-config-tool/mguard/atv"
+
 	"github.com/integrii/flaggy"
 	log "github.com/sirupsen/logrus"
 )
 
 // MergeCommand represents the 'merge' subcommand.
 type MergeCommand struct {
-	inFilePath1    string             // the first file to merge
-	inFilePath2    string             // the second file to merge
-	outAtvFilePath string             // the file receiving the merged result (ATV format)
-	outEcsFilePath string             // the file receiving the merged result (ECS container)
-	subcommand     *flaggy.Subcommand // flaggy's subcommand representing the 'merge' subcommand
+	inFilePath1       string             // the first file to merge
+	inFilePath2       string             // the second file to merge
+	inMergeConfigPath string             // the configuration file controlling the merge process (optional)
+	outAtvFilePath    string             // the file receiving the merged result (ATV format)
+	outEcsFilePath    string             // the file receiving the merged result (ECS container)
+	subcommand        *flaggy.Subcommand // flaggy's subcommand representing the 'merge' subcommand
 }
 
 // NewMergeCommand creates a new command handling the 'merge' subcommand.
@@ -30,6 +33,7 @@ func (cmd *MergeCommand) AddFlaggySubcommand() *flaggy.Subcommand {
 	cmd.subcommand.Description = "Merge two mGuard configuration files into one"
 	cmd.subcommand.AddPositionalValue(&cmd.inFilePath1, "1st-file", 1, true, "First configuration file to merge")
 	cmd.subcommand.AddPositionalValue(&cmd.inFilePath2, "2nd-file", 2, true, "Second configuration file to merge")
+	cmd.subcommand.String(&cmd.inMergeConfigPath, "", "config", "Merge configuration file")
 	cmd.subcommand.String(&cmd.outAtvFilePath, "", "atv-out", "File receiving the merged configuration (ATV format, instead of stdout)")
 	cmd.subcommand.String(&cmd.outEcsFilePath, "", "ecs-out", "File receiving the merged configuration (ECS container, instead of stdout)")
 
@@ -47,7 +51,7 @@ func (cmd *MergeCommand) IsSubcommandUsed() bool {
 func (cmd *MergeCommand) ValidateArguments() error {
 
 	// ensure that the specified files exist and are readable
-	files := []string{cmd.inFilePath1, cmd.inFilePath2}
+	files := []string{cmd.inFilePath1, cmd.inFilePath2, cmd.inMergeConfigPath}
 	for _, path := range files {
 		if len(path) > 0 {
 			file, err := os.Open(path)
@@ -90,6 +94,16 @@ func (cmd *MergeCommand) ExecuteCommand() error {
 		return err
 	}
 
+	// load the merge configuration file, if specified
+	// (if no configuration file is specified, all settings are merged)
+	var mergeConfig *atv.MergeConfiguration
+	if len(cmd.inMergeConfigPath) > 0 {
+		mergeConfig, err = atv.LoadMergeConfiguration(cmd.inMergeConfigPath)
+		if err != nil {
+			return err
+		}
+	}
+
 	// ensure that the first file has the same or a higher version than the second file
 	if version1.Compare(version2) < 0 {
 		return fmt.Errorf(
@@ -105,7 +119,7 @@ func (cmd *MergeCommand) ExecuteCommand() error {
 	}
 
 	// merge the configuration stored in both ECS containers
-	mergedAtv, err := ecs1.Atv.Merge(atv2)
+	mergedAtv, err := ecs1.Atv.MergeSelectively(atv2, mergeConfig)
 	if err != nil {
 		return err
 	}
