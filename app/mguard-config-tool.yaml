@@ -1,0 +1,16 @@
+input:
+  base_configuration:
+    path: ./data/configs/default.atv
+  hotfolder:
+    path: ./data/input
+  merge_configuration:
+    path: ""
+  sdcard_template:
+    path: ./data/sdcard-template
+output:
+  merged_configurations:
+    path: ./data/output-merged-configs
+    write_atv: true
+    write_ecs: false
+  update_packages:
+    path: ./data/output-update-packages

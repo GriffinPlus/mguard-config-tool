@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/griffinplus/mguard-config-tool/mguard/atv"
+
 	"github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,6 +20,16 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 
 	filename := filepath.Base(path)
 	filenameWithoutExtension := strings.TrimSuffix(filename, filepath.Ext(filename))
+	var err error
+
+	// load the merge configuration file
+	var mergeConfig *atv.MergeConfiguration
+	if len(cmd.mergeConfigurationPath) > 0 {
+		mergeConfig, err = atv.LoadMergeConfiguration(cmd.mergeConfigurationPath)
+		if err != nil {
+			return err
+		}
+	}
 
 	// load the configuration file (in the hot folder)
 	ecs, err := loadConfigurationFile(path)
@@ -32,7 +44,7 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 	}
 
 	// merge the base configuration with the loaded configuration
-	mergedAtv, err := baseEcs.Atv.Merge(ecs.Atv)
+	mergedAtv, err := baseEcs.Atv.MergeSelectively(ecs.Atv, mergeConfig)
 	if err != nil {
 		return err
 	}

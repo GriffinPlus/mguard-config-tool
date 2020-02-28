@@ -263,7 +263,9 @@ The default configuration file looks like the following:
 ```yaml
 input:
   base_configuration:
-    path: ./data/configs/default.tgz          # file: base configuration (usually an ECS container)
+    path: ./data/configs/default.atv          # file: base configuration (usually an ATV file)
+  merge_configuration:
+    path: ""                                  # file: merge configuration (empty => merge all settings)
   hotfolder:
     path: ./data/input                        # directory: the hot-folder that is monitored for ATV/ECS files to process
   sdcard_template:
@@ -278,9 +280,8 @@ output:
 ```
 
 The configured directories are created, if necessary and permissions allow that. Before the service can run, the base
-configuration file and the firmware files must be provided in the configured directories. If the base configuration is
-missing, the service will fail to start. If the sdcard template is missing, the generated packages will not contain any
-firmware files - only the merged configuration.
+configuration file and the sdcard template files must be provided in the configured directories. If the base configuration or
+the sdcard template files are missing, the service will fail to start.
 
 ## Known Limitations
 

@@ -18,13 +18,23 @@ func (cmd *ServiceCommand) setupFilesystem() error {
 		cmd.hotFolderPath,
 		cmd.mergedConfigurationDirectory,
 		cmd.updatePackageDirectory,
-		filepath.Dir(cmd.baseConfigurationPath),
 	}
+
+	if len(cmd.baseConfigurationPath) > 0 {
+		dirs = append(dirs, filepath.Dir(cmd.baseConfigurationPath))
+	}
+
+	if len(cmd.mergeConfigurationPath) > 0 {
+		dirs = append(dirs, filepath.Dir(cmd.mergeConfigurationPath))
+	}
+
 	for _, dir := range dirs {
-		err := os.MkdirAll(dir, 0777)
-		if err != nil {
-			log.Errorf("Creating directory (%s) failed: %v", dir, err)
-			return err
+		if len(dir) > 0 {
+			err := os.MkdirAll(dir, 0777)
+			if err != nil {
+				log.Errorf("Creating directory (%s) failed: %v", dir, err)
+				return err
+			}
 		}
 	}
 

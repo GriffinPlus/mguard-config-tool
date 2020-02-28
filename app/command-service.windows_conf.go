@@ -27,6 +27,11 @@ var settingInputBaseConfigurationPath = setting{
 	"./data/configs/default.atv",
 }
 
+var settingInputMergeConfigurationPath = setting{
+	"input.merge_configuration.path",
+	"",
+}
+
 var settingInputHotfolderPath = setting{
 	"input.hotfolder.path",
 	"./data/input",
@@ -55,6 +60,7 @@ var settingOutputUpdatePackagesPath = setting{
 var allSettings = []setting{
 	settingInputSdCardTemplatePath,
 	settingInputBaseConfigurationPath,
+	settingInputMergeConfigurationPath,
 	settingInputHotfolderPath,
 	settingOutputMergedConfigurationsPath,
 	settingOutputMergedConfigurationsWriteAtv,
@@ -104,53 +110,82 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	// input: sdcard template path (must be a directory)
 	log.Debugf("Setting '%s': '%s'", settingInputSdCardTemplatePath.path, conf.GetString(settingInputSdCardTemplatePath.path))
 	cmd.sdcardTemplateDirectory = conf.GetString(settingInputSdCardTemplatePath.path)
-	if filepath.IsAbs(cmd.sdcardTemplateDirectory) {
-		cmd.sdcardTemplateDirectory = filepath.Clean(cmd.sdcardTemplateDirectory)
-	} else {
-		path, err := filepath.Abs(filepath.Join(configDir, cmd.sdcardTemplateDirectory))
-		if err != nil {
-			return err
+	if len(cmd.sdcardTemplateDirectory) > 0 { // setting is optional
+		if filepath.IsAbs(cmd.sdcardTemplateDirectory) {
+			cmd.sdcardTemplateDirectory = filepath.Clean(cmd.sdcardTemplateDirectory)
+		} else {
+			path, err := filepath.Abs(filepath.Join(configDir, cmd.sdcardTemplateDirectory))
+			if err != nil {
+				return err
+			}
+			cmd.sdcardTemplateDirectory = path
 		}
-		cmd.sdcardTemplateDirectory = path
+	} else {
+		return fmt.Errorf("setting '%s' is not set.", settingInputSdCardTemplatePath.path)
 	}
 
 	// input: base configuration file
 	log.Debugf("Setting '%s': '%s'", settingInputBaseConfigurationPath.path, conf.GetString(settingInputBaseConfigurationPath.path))
 	cmd.baseConfigurationPath = conf.GetString(settingInputBaseConfigurationPath.path)
-	if filepath.IsAbs(cmd.baseConfigurationPath) {
-		cmd.baseConfigurationPath = filepath.Clean(cmd.baseConfigurationPath)
-	} else {
-		path, err := filepath.Abs(filepath.Join(configDir, cmd.baseConfigurationPath))
-		if err != nil {
-			return err
+	if len(cmd.baseConfigurationPath) > 0 {
+		if filepath.IsAbs(cmd.baseConfigurationPath) {
+			cmd.baseConfigurationPath = filepath.Clean(cmd.baseConfigurationPath)
+		} else {
+			path, err := filepath.Abs(filepath.Join(configDir, cmd.baseConfigurationPath))
+			if err != nil {
+				return err
+			}
+			cmd.baseConfigurationPath = path
 		}
-		cmd.baseConfigurationPath = path
+	} else {
+		return fmt.Errorf("setting '%s' is not set.", settingInputBaseConfigurationPath.path)
+	}
+
+	// input: merge configuration file
+	log.Debugf("Setting '%s': '%s'", settingInputMergeConfigurationPath.path, conf.GetString(settingInputMergeConfigurationPath.path))
+	cmd.mergeConfigurationPath = conf.GetString(settingInputMergeConfigurationPath.path)
+	if len(cmd.mergeConfigurationPath) > 0 { // setting is optional
+		if filepath.IsAbs(cmd.mergeConfigurationPath) {
+			cmd.mergeConfigurationPath = filepath.Clean(cmd.mergeConfigurationPath)
+		} else {
+			path, err := filepath.Abs(filepath.Join(configDir, cmd.mergeConfigurationPath))
+			if err != nil {
+				return err
+			}
+			cmd.mergeConfigurationPath = path
+		}
 	}
 
 	// input: hot folder path
 	log.Debugf("Setting '%s': '%s'", settingInputHotfolderPath.path, conf.GetString(settingInputHotfolderPath.path))
 	cmd.hotFolderPath = conf.GetString(settingInputHotfolderPath.path)
-	if filepath.IsAbs(cmd.hotFolderPath) {
-		cmd.hotFolderPath = filepath.Clean(cmd.hotFolderPath)
-	} else {
-		path, err := filepath.Abs(filepath.Join(configDir, cmd.hotFolderPath))
-		if err != nil {
-			return err
+	if len(cmd.hotFolderPath) > 0 {
+		if filepath.IsAbs(cmd.hotFolderPath) {
+			cmd.hotFolderPath = filepath.Clean(cmd.hotFolderPath)
+		} else {
+			path, err := filepath.Abs(filepath.Join(configDir, cmd.hotFolderPath))
+			if err != nil {
+				return err
+			}
+			cmd.hotFolderPath = path
 		}
-		cmd.hotFolderPath = path
+	} else {
+		return fmt.Errorf("setting '%s' is not set.", settingInputHotfolderPath.path)
 	}
 
 	// output: merged configuration directory
 	log.Debugf("Setting '%s': '%s'", settingOutputMergedConfigurationsPath.path, conf.GetString(settingOutputMergedConfigurationsPath.path))
 	cmd.mergedConfigurationDirectory = conf.GetString(settingOutputMergedConfigurationsPath.path)
-	if filepath.IsAbs(cmd.mergedConfigurationDirectory) {
-		cmd.mergedConfigurationDirectory = filepath.Clean(cmd.mergedConfigurationDirectory)
-	} else {
-		path, err := filepath.Abs(filepath.Join(configDir, cmd.mergedConfigurationDirectory))
-		if err != nil {
-			return err
+	if len(cmd.mergedConfigurationDirectory) > 0 { // setting is optional
+		if filepath.IsAbs(cmd.mergedConfigurationDirectory) {
+			cmd.mergedConfigurationDirectory = filepath.Clean(cmd.mergedConfigurationDirectory)
+		} else {
+			path, err := filepath.Abs(filepath.Join(configDir, cmd.mergedConfigurationDirectory))
+			if err != nil {
+				return err
+			}
+			cmd.mergedConfigurationDirectory = path
 		}
-		cmd.mergedConfigurationDirectory = path
 	}
 
 	// output: merged configuration directory - write atv
@@ -164,26 +199,29 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	// output: update package directory
 	log.Debugf("Setting '%s': '%s'", settingOutputUpdatePackagesPath.path, conf.GetString(settingOutputUpdatePackagesPath.path))
 	cmd.updatePackageDirectory = conf.GetString(settingOutputUpdatePackagesPath.path)
-	if filepath.IsAbs(cmd.updatePackageDirectory) {
-		cmd.updatePackageDirectory = filepath.Clean(cmd.updatePackageDirectory)
-	} else {
-		path, err := filepath.Abs(filepath.Join(configDir, cmd.updatePackageDirectory))
-		if err != nil {
-			return err
+	if len(cmd.updatePackageDirectory) > 0 { // setting is optional
+		if filepath.IsAbs(cmd.updatePackageDirectory) {
+			cmd.updatePackageDirectory = filepath.Clean(cmd.updatePackageDirectory)
+		} else {
+			path, err := filepath.Abs(filepath.Join(configDir, cmd.updatePackageDirectory))
+			if err != nil {
+				return err
+			}
+			cmd.updatePackageDirectory = path
 		}
-		cmd.updatePackageDirectory = path
 	}
 
 	// log configuration
 	logtext := strings.Builder{}
 	logtext.WriteString(fmt.Sprintf("--- Configuration ---\n"))
-	logtext.WriteString(fmt.Sprintf("SD Card Template Directory:       %v\n", cmd.sdcardTemplateDirectory))
-	logtext.WriteString(fmt.Sprintf("Base Configuration File:          %v\n", cmd.baseConfigurationPath))
-	logtext.WriteString(fmt.Sprintf("Hot folder:                       %v\n", cmd.hotFolderPath))
-	logtext.WriteString(fmt.Sprintf("Merged Configuration Directory:   %v\n", cmd.mergedConfigurationDirectory))
+	logtext.WriteString(fmt.Sprintf("SD Card Template Directory:       %s\n", cmd.sdcardTemplateDirectory))
+	logtext.WriteString(fmt.Sprintf("Base Configuration File:          %s\n", cmd.baseConfigurationPath))
+	logtext.WriteString(fmt.Sprintf("Merge Configuration File:         %s\n", cmd.mergeConfigurationPath))
+	logtext.WriteString(fmt.Sprintf("Hot folder:                       %s\n", cmd.hotFolderPath))
+	logtext.WriteString(fmt.Sprintf("Merged Configuration Directory:   %s\n", cmd.mergedConfigurationDirectory))
 	logtext.WriteString(fmt.Sprintf("  - Write ATV:                    %v\n", cmd.mergedConfigurationsWriteAtv))
 	logtext.WriteString(fmt.Sprintf("  - Write ECS:                    %v\n", cmd.mergedConfigurationsWriteEcs))
-	logtext.WriteString(fmt.Sprintf("Update Package Directory:         %v\n", cmd.updatePackageDirectory))
+	logtext.WriteString(fmt.Sprintf("Update Package Directory:         %s\n", cmd.updatePackageDirectory))
 	logtext.WriteString(fmt.Sprintf("--- Configuration End ---"))
 	log.Info(logtext.String())
 

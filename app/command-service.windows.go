@@ -5,6 +5,8 @@ package main
 import (
 	"path/filepath"
 
+	"github.com/griffinplus/mguard-config-tool/mguard/atv"
+
 	"github.com/integrii/flaggy"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/windows/svc"
@@ -16,9 +18,10 @@ import (
 type ServiceCommand struct {
 	serviceName                  string             // name of the service
 	serviceConfig                mgr.Config         // configuration of the service
-	configPath                   string             // path of the configuration file
+	configPath                   string             // path of the base configuration file
 	sdcardTemplateDirectory      string             // path of the directory containing the basic structure of an sdcard (incl. firmware files)
 	baseConfigurationPath        string             // path of the mguard configuration file to use as base configuration
+	mergeConfigurationPath       string             // path of the merge configuration file that defines which settings to merge into the base configuration
 	hotFolderPath                string             // path of the directory to watch for atv/ecs files with configurations to merge with the base configuration
 	mergedConfigurationDirectory string             // path of the directory where to store merged mguard configurations
 	mergedConfigurationsWriteAtv bool               // true to write an ATV file with the merged configuration, otherwise false
@@ -162,6 +165,15 @@ func (cmd *ServiceCommand) runService(isDebug bool) error {
 	if err != nil {
 		log.Errorf("Loading base configuration file failed: %v", err)
 		return err
+	}
+
+	// ensure that the specified merge configuration file is valid
+	if len(cmd.mergeConfigurationPath) > 0 {
+		_, err = atv.LoadMergeConfiguration(cmd.mergeConfigurationPath)
+		if err != nil {
+			log.Errorf("Loading merge configuration file failed: %v", err)
+			return err
+		}
 	}
 
 	// start the service
