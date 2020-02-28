@@ -287,9 +287,18 @@ func (file *File) GetSetting(settingName string) (string, error) {
 	return setting.String(), nil
 }
 
-// Merge merges the specified ATV document into the current one.
+// Merge merges all settings from the specified ATV document into the current one.
 func (file *File) Merge(other *File) (*File, error) {
 	merged, err := file.doc.Merge(other.doc)
+	if err != nil {
+		return nil, err
+	}
+	return &File{doc: merged}, nil
+}
+
+// MergeSelectively merges the specified settings from the specified ATV document into the current one.
+func (file *File) MergeSelectively(other *File, config *MergeConfiguration) (*File, error) {
+	merged, err := file.doc.MergeSelectively(other.doc, config)
 	if err != nil {
 		return nil, err
 	}

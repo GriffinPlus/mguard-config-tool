@@ -486,8 +486,14 @@ func (doc *document) MergeTableSetting(setting *documentSetting) error {
 	return nil
 }
 
-// Merge merges the specified ATV document into the current one.
+// Merge merges all settings of the specified ATV document into the current one.
 func (doc *document) Merge(other *document) (*document, error) {
+	return doc.MergeSelectively(other, nil)
+}
+
+// Merge merges the configured settings of the specified ATV document into the current one.
+// config : The merge configuration (nil merges all settings)
+func (doc *document) MergeSelectively(other *document, config *MergeConfiguration) (*document, error) {
 
 	if doc == nil {
 		return nil, ErrNilReceiver
@@ -495,9 +501,17 @@ func (doc *document) Merge(other *document) (*document, error) {
 
 	copy := doc.Dupe()
 	for _, otherNode := range other.Nodes {
-		err := otherNode.Setting.mergeInto(copy)
-		if err != nil {
-			return nil, err
+		if otherNode.Setting != nil {
+			otherSettingPath, _ := parseDocumentSettingPath(otherNode.Setting.Name) // works for top-level setting only!
+			if config == nil || config.ShouldMergeSetting(otherSettingPath) {
+				log.Infof("Merging setting '%s'...", otherNode.Setting.Name)
+				err := otherNode.Setting.mergeInto(copy)
+				if err != nil {
+					return nil, err
+				}
+			} else {
+				log.Debugf("Setting '%s' is not in merge list. Skipping...", otherNode.Setting.Name)
+			}
 		}
 	}
 
