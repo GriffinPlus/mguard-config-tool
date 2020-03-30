@@ -5,12 +5,6 @@
 
 -----
 
-## Status
-
-**This project is under active development and should not be used in production, yet.**
-
------
-
 ## Overview and Motivation
 
 The *mGuard* security router series is a family of firewall/router devices that is produced by the PHOENIX CONTACT
@@ -286,7 +280,7 @@ the sdcard template files are missing, the service will fail to start.
 ## Known Limitations
 
 - Comments: Reading a configuration file discards comments, so a written configuration file does not contain any comments.
-- Migrations: Only a selection of migrations is implemented to make our own usecases work. The lack on documentation about
+- Migrations: Only a selection of migrations is implemented to make our own use cases work. The lack of documentation about
   ATV documents and migrations forced us to deduce needed migration steps from observed behavior. If you discover further
   steps that are needed to migrate from one version to another, please let us know by opening an issue.
 
