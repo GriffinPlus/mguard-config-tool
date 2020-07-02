@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -37,8 +38,34 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 		return err
 	}
 
+	// determine the version of the configuration file in the hot folder
+	ecsVersion, err := ecs.Atv.GetVersion()
+	if err != nil {
+		return err
+	}
+
 	// load the base configuration file
 	baseEcs, err := loadConfigurationFile(cmd.baseConfigurationPath)
+	if err != nil {
+		return err
+	}
+
+	// determine the version of the base configuration file
+	baseEcsVersion, err := baseEcs.Atv.GetVersion()
+	if err != nil {
+		return err
+	}
+
+	// ensure that the version of the base configuration file has the same or a higher version than the configuration file in the hot folder
+	if baseEcsVersion.Compare(ecsVersion) < 0 {
+		return fmt.Errorf(
+			"The configuration file (%s, version: %s) must have the same or a higher version than the base configuration file (%s, version: %s)",
+			path, ecsVersion,
+			cmd.baseConfigurationPath, baseEcsVersion)
+	}
+
+	// migrate configuration file in the hot folder to the version of the base configuration file, if necessary
+	ecs.Atv, err = ecs.Atv.Migrate(baseEcsVersion)
 	if err != nil {
 		return err
 	}
