@@ -1,10 +1,12 @@
 input:
   base_configuration:
-    path: ./data/configs/default.tgz
-  firmware:
-    path: ./data/firmware
+    path: ./data/configs/default.atv
   hotfolder:
     path: ./data/input
+  merge_configuration:
+    path: ""
+  sdcard_template:
+    path: ./data/sdcard-template
 output:
   merged_configurations:
     path: ./data/output-merged-configs
