@@ -323,9 +323,35 @@ func (file *File) Migrate(targetVersion Version) (*File, error) {
 
 	// migrations in ascending order
 	migrations := []migrationProvider{
-		migration_7_5_0_to_8_0_2{},
+		migration_7_5_0_to_7_6_0{},
+		migration_7_6_0_to_7_6_1{},
+		migration_7_6_1_to_7_6_2{},
+		migration_7_6_2_to_8_0_1{},
+		migration_8_0_1_to_8_0_2{},
 		migration_8_0_2_to_8_1_0{},
-		migration_8_1_0_to_8_8_1{},
+		migration_8_1_0_to_8_1_1{},
+		migration_8_1_1_to_8_1_2{},
+		migration_8_1_2_to_8_1_3{},
+		migration_8_1_3_to_8_1_4{},
+		migration_8_1_4_to_8_1_5{},
+		migration_8_1_5_to_8_1_6{},
+		migration_8_1_6_to_8_1_7{},
+		migration_8_1_7_to_8_1_8{},
+		migration_8_1_8_to_8_3_0{},
+		migration_8_3_0_to_8_3_1{},
+		migration_8_3_1_to_8_4_0{},
+		migration_8_4_0_to_8_4_1{},
+		migration_8_4_1_to_8_4_2{},
+		migration_8_4_2_to_8_5_0{},
+		migration_8_5_0_to_8_5_1{},
+		migration_8_5_1_to_8_5_2{},
+		migration_8_5_2_to_8_5_3{},
+		migration_8_5_3_to_8_6_0{},
+		migration_8_6_0_to_8_6_1{},
+		migration_8_6_1_to_8_7_0{},
+		migration_8_7_0_to_8_7_1{},
+		migration_8_7_1_to_8_8_0{},
+		migration_8_8_0_to_8_8_1{},
 	}
 
 	// run migrations

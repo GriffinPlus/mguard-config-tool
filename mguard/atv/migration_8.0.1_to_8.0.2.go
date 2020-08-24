@@ -1,29 +1,29 @@
 package atv
 
-type migration_7_5_0_to_8_0_2 struct{}
+type migration_8_0_1_to_8_0_2 struct{}
 
 // FromVersion returns the document version the migration start with.
-func (_ migration_7_5_0_to_8_0_2) FromVersion() Version {
+func (_ migration_8_0_1_to_8_0_2) FromVersion() Version {
 	return Version{
-		Major: 7,
-		Minor: 5,
-		Patch: 0,
+		Major:  8,
+		Minor:  0,
+		Patch:  1,
 		Suffix: "default",
 	}
 }
 
 // ToVersion returns the document version the migration ends with.
-func (_ migration_7_5_0_to_8_0_2) ToVersion() Version {
+func (_ migration_8_0_1_to_8_0_2) ToVersion() Version {
 	return Version{
-		Major: 8,
-		Minor: 0,
-		Patch: 2,
+		Major:  8,
+		Minor:  0,
+		Patch:  2,
 		Suffix: "default",
 	}
 }
 
 // Migrate performs the migration.
-func (migration migration_7_5_0_to_8_0_2) Migrate(file *File) (*File, error) {
+func (migration migration_8_0_1_to_8_0_2) Migrate(file *File) (*File, error) {
 	newFile := file.Dupe()
 	newFile.SetVersion(migration.ToVersion())
 	return newFile, nil
