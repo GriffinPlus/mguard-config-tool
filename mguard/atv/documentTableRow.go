@@ -78,6 +78,25 @@ func (row *documentTableRow) HasSameID(other *documentTableRow) bool {
 	return row != nil && other != nil && row.RowID != nil && other.RowID != nil && row.RowID == other.RowID
 }
 
+// SetSimpleValueByName replaces the setting with the specified name with a simple value with the specified string.
+// It adds the setting, if it does not exist, yet.
+func (row *documentTableRow) SetSimpleValueByName(name string, value string) error {
+
+	newItem := &documentSimpleValue{Value: value}
+
+	for _, item := range row.Items {
+		if item.Name == name {
+			item.ClearValue()
+			item.SimpleValue = newItem
+		}
+	}
+
+	// setting with that name does not exist, add it
+	row.Items = append(row.Items, &documentSetting{Name: name, SimpleValue: newItem})
+
+	return nil
+}
+
 // String returns the table row as a string.
 func (row *documentTableRow) String() string {
 
