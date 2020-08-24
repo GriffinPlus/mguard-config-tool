@@ -161,7 +161,49 @@ func (setting *documentSetting) getSetting(path documentSettingPath, index int) 
 	panic("Unhandled setting type")
 }
 
+// removeSetting removes the setting at the specified path.
+// If the setting does not exist, nil is returned (no error).
+func (setting *documentSetting) removeSetting(path documentSettingPath, index int) error {
+
+	// abort, if the setting is found
+	if index == len(path) {
+		return nil
+	}
+
+	if setting.SimpleValue != nil || setting.ValueWithMetadata != nil {
+		return fmt.Errorf("Setting '%s' is a single value, but the path '%s' specifies a more nested setting", path[0:index], path)
+	}
+
+	if setting.TableValue != nil {
+
+		if path[index].row == nil {
+			return fmt.Errorf("Setting '%s' is a table value, but the path '%s' does not address a specific row", path[0:index], path)
+		}
+
+		if index+1 == len(path) {
+			return fmt.Errorf("Setting '%s' is a table value, but the path '%s' does not address a value within a row", path[0:index], path)
+		}
+
+		rowIndex := *path[index].row
+		if rowIndex >= len(setting.TableValue.Rows) {
+			return nil
+		}
+
+		row := setting.TableValue.Rows[rowIndex]
+		for _, item := range row.Items {
+			if item.Name == *path[index+1].name {
+				return item.removeSetting(path, index+2)
+			}
+		}
+
+		return nil
+	}
+
+	panic("Unhandled setting type")
+}
+
 // GetValue gets the value of the setting, if the setting is a simple value - with or without metadata.
+// If the setting is a row reference, the reference is returned.
 // If the setting has a table value, an error is returned.
 func (setting *documentSetting) GetValue() (string, error) {
 
@@ -177,7 +219,7 @@ func (setting *documentSetting) GetValue() (string, error) {
 		return "", fmt.Errorf("The setting does not contain a value")
 	}
 
-	return "", fmt.Errorf("The setting is not a single value")
+	return "", fmt.Errorf("The setting is not a simple value")
 }
 
 // WriteDocumentPart writes a part of the ATV document to the specified writer.

@@ -582,6 +582,42 @@ func (doc *document) getSetting(path documentSettingPath) (*documentSetting, err
 	return nil, nil
 }
 
+// RemoveSetting removes the setting with the specified name.
+// If the setting does not exist, no error is signalled.
+func (doc *document) RemoveSetting(settingName string) error {
+
+	path, err := parseDocumentSettingPath(settingName)
+	if err != nil {
+		return err
+	}
+
+	return doc.removeSetting(path)
+}
+
+// removeSetting removes the setting at the specified path.
+// If the setting does not exist, no error is signalled.
+func (doc *document) removeSetting(path documentSettingPath) error {
+
+	if len(path) == 0 {
+		return fmt.Errorf("Path is empty")
+	}
+
+	if path[0].name == nil {
+		return fmt.Errorf("The first path token '%s' is not a setting name", path[0])
+	}
+
+	for _, node := range doc.Nodes {
+		if node.Setting != nil {
+			if node.Setting.Name == *path[0].name {
+				return node.Setting.removeSetting(path, 1)
+			}
+		}
+	}
+
+	// specified setting does not exist
+	return nil
+}
+
 // UnquoteToken unquotes the specified token.
 func unquoteToken(types ...string) participle.Option {
 	if len(types) == 0 {
