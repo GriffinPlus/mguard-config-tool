@@ -161,6 +161,66 @@ func (setting *documentSetting) getSetting(path documentSettingPath, index int) 
 	panic("Unhandled setting type")
 }
 
+// createSettingPlaceholder creates all nodes along the specified path and a setting placeholder at the end.
+func (setting *documentSetting) createSettingPlaceholder(path documentSettingPath, index int) (*documentSetting, error) {
+
+	// abort, if the setting is found
+	if index == len(path) {
+		return setting, nil
+	}
+
+	if setting.SimpleValue != nil || setting.ValueWithMetadata != nil {
+		return nil, fmt.Errorf("Setting '%s' is a single value, but the path '%s' specifies a more nested setting", path[0:index], path)
+	}
+
+	if setting.TableValue != nil {
+
+		if path[index].row == nil {
+			return nil, fmt.Errorf("Setting '%s' is a table value, but the path '%s' does not address a specific row", path[0:index], path)
+		}
+
+		if index+1 == len(path) {
+			return nil, fmt.Errorf("Setting '%s' is a table value, but the path '%s' does not address a value within a row", path[0:index], path)
+		}
+
+		// add missing table rows, if the index is out of bounds
+		rowIndex := *path[index].row
+		if rowIndex >= len(setting.TableValue.Rows) {
+			for i := rowIndex - len(setting.TableValue.Rows) + 1; i > 0; i-- {
+				setting.TableValue.Rows = append(setting.TableValue.Rows, &documentTableRow{Items: []*documentSetting{}})
+			}
+		}
+
+		// try to get existing setting
+		row := setting.TableValue.Rows[rowIndex]
+		for _, item := range row.Items {
+			if item.Name == *path[index+1].name {
+				return item.createSettingPlaceholder(path, index+2)
+			}
+		}
+
+		// setting does not exist, yet
+		// => create node on the way to it
+		if index+2 == len(path) {
+			// last setting on the path
+			newNode := &documentSetting{Name: *path[index+1].name}
+			row.Items = append(row.Items, newNode)
+			return newNode, nil
+		} else {
+			// a setting on the path to the specified setting, can be a table value only
+			newNode := &documentSetting{
+				Name: *path[index+1].name,
+				TableValue: &documentTableValue{
+					Rows: []*documentTableRow{
+						&documentTableRow{Items: []*documentSetting{}}}}}
+			row.Items = append(row.Items, newNode)
+			return newNode.createSettingPlaceholder(path, index+2)
+		}
+	}
+
+	panic("Unhandled setting type")
+}
+
 // removeSetting removes the setting at the specified path.
 // If the setting does not exist, nil is returned (no error).
 func (setting *documentSetting) removeSetting(path documentSettingPath, index int) error {

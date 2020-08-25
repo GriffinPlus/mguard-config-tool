@@ -582,6 +582,53 @@ func (doc *document) getSetting(path documentSettingPath) (*documentSetting, err
 	return nil, nil
 }
 
+// SetSimpleValueSetting sets the setting with the specified name to a simple string value.
+func (doc *document) SetSimpleValueSetting(settingName string, value string) error {
+
+	path, err := parseDocumentSettingPath(settingName)
+	if err != nil {
+		return err
+	}
+
+	err = doc.setSimpleValueSetting(path, value)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// setSimpleValueSetting sets the setting at the specified path to the specified simple string value
+func (doc *document) setSimpleValueSetting(path documentSettingPath, value string) error {
+
+	if len(path) == 0 {
+		return fmt.Errorf("Path is empty")
+	}
+
+	if path[0].name == nil {
+		return fmt.Errorf("The first path token '%s' is not a setting name", path[0])
+	}
+
+	// try to get existing setting
+	setting, err := doc.getSetting(path)
+	if err != nil {
+		return err
+	}
+
+	// create the path to the setting, if the setting does not exist, yet
+	if setting == nil {
+		setting, err = doc.createSettingPlaceholder(path)
+		if err != nil {
+			return err
+		}
+	}
+
+	// set setting value
+	setting.ClearValue()
+	setting.SimpleValue = &documentSimpleValue{Value: value}
+	return nil
+}
+
 // RemoveSetting removes the setting with the specified name.
 // If the setting does not exist, no error is signalled.
 func (doc *document) RemoveSetting(settingName string) error {
@@ -623,6 +670,54 @@ func (doc *document) removeSetting(path documentSettingPath) error {
 
 	// specified setting does not exist
 	return nil
+}
+
+// createSettingPlaceholder creates all necessary nodes in the document to the setting at the specified path.
+// The setting itself is empty, if it did not exist before.
+func (doc *document) createSettingPlaceholder(path documentSettingPath) (*documentSetting, error) {
+
+	if len(path) == 0 {
+		return nil, fmt.Errorf("Path is empty")
+	}
+
+	if path[0].name == nil {
+		return nil, fmt.Errorf("The first path token '%s' is not a setting name", path[0])
+	}
+
+	// use existing node, if it exists already
+	for _, node := range doc.Nodes {
+		if node.Setting != nil {
+			if node.Setting.Name == *path[0].name {
+				if len(path) == 1 {
+					// a top-level setting
+					// => that's already what we're looking for
+					return node.Setting, nil
+				} else {
+					// a nested setting => dive deeper
+					return node.Setting.createSettingPlaceholder(path, 1)
+				}
+			}
+		}
+	}
+
+	// the setting was not set, because there was no existing setting with the specified name
+	// => add a new one
+	if len(path) == 1 {
+		// a top-level setting
+		newSetting := &documentSetting{Name: *path[0].name}
+		newNode := &documentNode{Setting: newSetting}
+		doc.Nodes = append(doc.Nodes, newNode)
+		return newSetting, nil
+	} else {
+		// a nested setting
+		newSetting := &documentSetting{
+			Name: *path[0].name,
+			TableValue: &documentTableValue{
+				Rows: []*documentTableRow{}}}
+		newNode := &documentNode{Setting: newSetting}
+		doc.Nodes = append(doc.Nodes, newNode)
+		return newNode.Setting.createSettingPlaceholder(path, 1)
+	}
 }
 
 // UnquoteToken unquotes the specified token.
