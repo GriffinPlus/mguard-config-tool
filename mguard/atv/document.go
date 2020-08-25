@@ -606,10 +606,17 @@ func (doc *document) removeSetting(path documentSettingPath) error {
 		return fmt.Errorf("The first path token '%s' is not a setting name", path[0])
 	}
 
-	for _, node := range doc.Nodes {
+	for i, node := range doc.Nodes {
 		if node.Setting != nil {
 			if node.Setting.Name == *path[0].name {
-				return node.Setting.removeSetting(path, 1)
+				if len(path) == 1 {
+					// top-level item => just remove it
+					doc.Nodes = append(doc.Nodes[:i], doc.Nodes[i+1:]...)
+					return nil
+				} else {
+					// nested setting => dive deeper
+					return node.Setting.removeSetting(path, 1)
+				}
 			}
 		}
 	}

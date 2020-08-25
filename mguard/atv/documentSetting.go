@@ -190,9 +190,21 @@ func (setting *documentSetting) removeSetting(path documentSettingPath, index in
 		}
 
 		row := setting.TableValue.Rows[rowIndex]
-		for _, item := range row.Items {
+		for i, item := range row.Items {
 			if item.Name == *path[index+1].name {
-				return item.removeSetting(path, index+2)
+
+				// dive deeper
+				err := item.removeSetting(path, index+2)
+				if err != nil {
+					return err
+				}
+
+				// remove the item, if the appropriate depth is reached
+				if index+2 == len(path) {
+					row.Items = append(row.Items[:i], row.Items[i+1:]...)
+				}
+
+				return nil
 			}
 		}
 
