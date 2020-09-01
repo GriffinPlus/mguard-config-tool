@@ -8,7 +8,7 @@
 ## Overview and Motivation
 
 The *mGuard* security router series is a family of firewall/router devices that is produced by the PHOENIX CONTACT
-Cyber Security AG, a member of the [PHOENIX CONTACT group](https://www.phoenixcontact.com/). An *mGuard* in connection
+Cyber Security GmbH, a member of the [PHOENIX CONTACT group](https://www.phoenixcontact.com/). An *mGuard* in connection
 with the [mGuard Secure Cloud](https://us.cloud.mguard.com/) can be used for remote servicing machines in the field
 via IPSec-VPN.
 
