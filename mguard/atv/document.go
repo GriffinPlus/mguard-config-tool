@@ -249,7 +249,7 @@ func (doc *document) GetAttribute(settingName, attributeName string) (*string, e
 		panic("Unhandled value type")
 	}
 
-	return nil, fmt.Errorf("Setting '%s' does not exist", settingName)
+	return nil, nil
 }
 
 // SetAttribute sets the specified attribute associated with the specified setting.
