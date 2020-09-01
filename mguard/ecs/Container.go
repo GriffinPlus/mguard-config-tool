@@ -191,7 +191,7 @@ func (container *Container) ToFile(path string) error {
 	}
 	defer file.Close()
 
-	// write the ECS containre
+	// write the ECS container
 	return container.ToWriter(file)
 }
 
