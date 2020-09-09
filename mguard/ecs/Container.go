@@ -4,10 +4,13 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -193,6 +196,68 @@ func (container *Container) ToFile(path string) error {
 
 	// write the ECS container
 	return container.ToWriter(file)
+}
+
+// ToEncryptedFile writes the ECS container encrypted with the specified device certifivate to the specified file.
+func (container *Container) ToEncryptedFile(path string, deviceCertificate *x509.Certificate) error {
+
+	// determine the path of the openssl executable
+	opensslExecutablePath, err := GetOpensslExecutablePath()
+	if err != nil {
+		return err
+	}
+
+	// create temporary directory to perform the encryption in
+	scratchDir, err := ioutil.TempDir("", "ecs-encryption")
+	if err != nil {
+		log.Errorf("%v", err)
+		return err
+	}
+	defer os.RemoveAll(scratchDir)
+
+	// save device certificate (PEM encoded)
+	block := &pem.Block{
+		Type:    "CERTIFICATE",
+		Headers: map[string]string{},
+		Bytes:   deviceCertificate.Raw,
+	}
+	err = ioutil.WriteFile(filepath.Join(scratchDir, "device.pem"), pem.EncodeToMemory(block), 644)
+	if err != nil {
+		return err
+	}
+
+	// write ECS container into a buffer
+	var ecsBuffer bytes.Buffer
+	err = container.ToWriter(&ecsBuffer)
+	if err != nil {
+		log.Errorf("Serializing ECS container failed: %s", err)
+		return err
+	}
+
+	// encrypt the ECS container
+	var encryptedEcs bytes.Buffer
+	var stderr bytes.Buffer
+	opensslCmd := exec.Command(opensslExecutablePath, "smime", "-encrypt", "-binary", "-outform", "PEM", "device.pem")
+	opensslCmd.Dir = scratchDir
+	opensslCmd.Stdin = bytes.NewReader(ecsBuffer.Bytes())
+	opensslCmd.Stdout = &encryptedEcs
+	opensslCmd.Stderr = &stderr
+	err = opensslCmd.Run()
+	if err != nil {
+		log.Debugf("OpenSSL failed:\n%s\n", stderr.String())
+		log.Errorf("Encrypting ECS container failed: %s", err)
+		return err
+	}
+
+	// write the encrypted ECS container to the final destination
+	log.Infof("Writing encrypted ECS file (%s)...", path)
+	err = ioutil.WriteFile(path, encryptedEcs.Bytes(), 644)
+	if err != nil {
+		log.Errorf("Writing encrypted ECS file (%s) failed: %s", path, err)
+		return err
+	}
+
+	return nil
 }
 
 // ToWriter writes the ECS container to the specified io.Writer.
