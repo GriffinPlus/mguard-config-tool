@@ -140,13 +140,17 @@ func (cmd *ServiceCommand) ExecuteCommand() error {
 // runService runs the service and blocks until it completes.
 func (cmd *ServiceCommand) runService(isDebug bool) error {
 
+	var err error
+
 	// initialize the event log
-	logAdapter := NewWindowsEventLogAdapter(cmd.serviceName, isDebug)
-	err := logAdapter.Open()
-	if err != nil {
-		return err
+	if !isDebug {
+		logAdapter := NewWindowsEventLogAdapter(cmd.serviceName, isDebug)
+		err = logAdapter.Open()
+		if err != nil {
+			return err
+		}
+		defer logAdapter.Close()
 	}
-	defer logAdapter.Close()
 
 	// load the service configuration file
 	err = cmd.loadServiceConfiguration(cmd.configPath, true)
