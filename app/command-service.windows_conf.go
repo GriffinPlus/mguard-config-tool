@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/griffinplus/mguard-config-tool/mguard/certmgr"
+	"github.com/griffinplus/mguard-config-tool/mguard/ecs"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -15,6 +17,21 @@ import (
 type setting struct {
 	path         string
 	defaultValue interface{}
+}
+
+var settingCachePath = setting{
+	"cache.path",
+	"./data/cache",
+}
+
+var settingDeviceDatabaseUser = setting{
+	"device_database.user",
+	"",
+}
+
+var settingDeviceDatabasePassword = setting{
+	"device_database.password",
+	"",
 }
 
 var settingInputSdCardTemplatePath = setting{
@@ -47,8 +64,13 @@ var settingOutputMergedConfigurationsWriteAtv = setting{
 	true,
 }
 
-var settingOutputMergedConfigurationsWriteEcs = setting{
-	"output.merged_configurations.write_ecs",
+var settingOutputMergedConfigurationsWriteUnencryptedEcs = setting{
+	"output.merged_configurations.write_unencrypted_ecs",
+	true,
+}
+
+var settingOutputMergedConfigurationsWriteEncryptedEcs = setting{
+	"output.merged_configurations.write_encrypted_ecs",
 	false,
 }
 
@@ -57,15 +79,25 @@ var settingOutputUpdatePackagesPath = setting{
 	"./data/output-update-packages",
 }
 
+var settingOpenSslBinaryPath = setting{
+	"tools.openssl.path",
+	"",
+}
+
 var allSettings = []setting{
+	settingCachePath,
+	settingDeviceDatabaseUser,
+	settingDeviceDatabasePassword,
 	settingInputSdCardTemplatePath,
 	settingInputBaseConfigurationPath,
 	settingInputMergeConfigurationPath,
 	settingInputHotfolderPath,
 	settingOutputMergedConfigurationsPath,
 	settingOutputMergedConfigurationsWriteAtv,
-	settingOutputMergedConfigurationsWriteEcs,
+	settingOutputMergedConfigurationsWriteUnencryptedEcs,
+	settingOutputMergedConfigurationsWriteEncryptedEcs,
 	settingOutputUpdatePackagesPath,
+	settingOpenSslBinaryPath,
 }
 
 // loadServiceConfiguration loads the service configuration from the specified file.
@@ -107,6 +139,31 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	// configuration is available now
 	// => validate settings
 
+	// cache: base path (must be a directory)
+	log.Debugf("Setting '%s': '%s'", settingCachePath.path, conf.GetString(settingCachePath.path))
+	cmd.cacheDirectory = conf.GetString(settingCachePath.path)
+	if len(cmd.cacheDirectory) > 0 {
+		if filepath.IsAbs(cmd.cacheDirectory) {
+			cmd.cacheDirectory = filepath.Clean(cmd.cacheDirectory)
+		} else {
+			path, err := filepath.Abs(filepath.Join(configDir, cmd.cacheDirectory))
+			if err != nil {
+				return err
+			}
+			cmd.cacheDirectory = path
+		}
+	} else {
+		return fmt.Errorf("setting '%s' is not set.", settingCachePath.path)
+	}
+
+	// device database: user
+	log.Debugf("Setting '%s': '%s'", settingDeviceDatabaseUser.path, conf.GetString(settingDeviceDatabaseUser.path))
+	deviceDatabaseUser := conf.GetString(settingDeviceDatabaseUser.path)
+
+	// device database: password
+	log.Debugf("Setting '%s': '%s'", settingDeviceDatabasePassword.path, conf.GetString(settingDeviceDatabasePassword.path))
+	deviceDatabasePassword := conf.GetString(settingDeviceDatabasePassword.path)
+
 	// input: sdcard template path (must be a directory)
 	log.Debugf("Setting '%s': '%s'", settingInputSdCardTemplatePath.path, conf.GetString(settingInputSdCardTemplatePath.path))
 	cmd.sdcardTemplateDirectory = conf.GetString(settingInputSdCardTemplatePath.path)
@@ -120,8 +177,6 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 			}
 			cmd.sdcardTemplateDirectory = path
 		}
-	} else {
-		return fmt.Errorf("setting '%s' is not set.", settingInputSdCardTemplatePath.path)
 	}
 
 	// input: base configuration file
@@ -170,7 +225,7 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 			cmd.hotFolderPath = path
 		}
 	} else {
-		return fmt.Errorf("setting '%s' is not set.", settingInputHotfolderPath.path)
+		return fmt.Errorf("setting '%s' is not set", settingInputHotfolderPath.path)
 	}
 
 	// output: merged configuration directory
@@ -189,12 +244,19 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	}
 
 	// output: merged configuration directory - write atv
+	// Valid: true, false
 	log.Debugf("Setting '%s': '%s'", settingOutputMergedConfigurationsWriteAtv.path, conf.GetString(settingOutputMergedConfigurationsWriteAtv.path))
 	cmd.mergedConfigurationsWriteAtv = conf.GetBool(settingOutputMergedConfigurationsWriteAtv.path)
 
-	// output: merged configuration directory - write ecs
-	log.Debugf("Setting '%s': '%s'", settingOutputMergedConfigurationsWriteEcs.path, conf.GetString(settingOutputMergedConfigurationsWriteEcs.path))
-	cmd.mergedConfigurationsWriteEcs = conf.GetBool(settingOutputMergedConfigurationsWriteEcs.path)
+	// output: merged configuration directory - write unencrypted ecs
+	// Valid: true, false
+	log.Debugf("Setting '%s': '%s'", settingOutputMergedConfigurationsWriteUnencryptedEcs.path, conf.GetString(settingOutputMergedConfigurationsWriteUnencryptedEcs.path))
+	cmd.mergedConfigurationsWriteUnencryptedEcs = conf.GetBool(settingOutputMergedConfigurationsWriteUnencryptedEcs.path)
+
+	// output: merged configuration directory - write encrypted ecs
+	// Valid: true, false
+	log.Debugf("Setting '%s': '%s'", settingOutputMergedConfigurationsWriteEncryptedEcs.path, conf.GetString(settingOutputMergedConfigurationsWriteEncryptedEcs.path))
+	cmd.mergedConfigurationsWriteEncryptedEcs = conf.GetBool(settingOutputMergedConfigurationsWriteEncryptedEcs.path)
 
 	// output: update package directory
 	log.Debugf("Setting '%s': '%s'", settingOutputUpdatePackagesPath.path, conf.GetString(settingOutputUpdatePackagesPath.path))
@@ -211,19 +273,63 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 		}
 	}
 
+	// tools: openssl binary path
+	log.Debugf("Setting '%s': '%s'", settingOpenSslBinaryPath.path, conf.GetString(settingOpenSslBinaryPath.path))
+	opensslBinaryPath := conf.GetString(settingOpenSslBinaryPath.path)
+	if len(opensslBinaryPath) > 0 {
+
+		// the openssl binary path was specified explicitly
+		// => tell the ecs container module to use it (the module checks the existence of the executable)
+
+		if filepath.IsAbs(opensslBinaryPath) {
+			opensslBinaryPath = filepath.Clean(opensslBinaryPath)
+		} else {
+			path, err := filepath.Abs(filepath.Join(configDir, opensslBinaryPath))
+			if err != nil {
+				return err
+			}
+			opensslBinaryPath = path
+		}
+
+		err := ecs.SetOpensslExecutablePath(opensslBinaryPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	// let the ecs module determine the openssl executable
+	// (searches using the PATH variable, if the path was not configured explicitly)
+	opensslBinaryPath, err = ecs.GetOpensslExecutablePath()
+	if err != nil {
+		return err
+	}
+
 	// log configuration
 	logtext := strings.Builder{}
 	logtext.WriteString(fmt.Sprintf("--- Configuration ---\n"))
+	logtext.WriteString(fmt.Sprintf("Cache Directory:                  %s\n", cmd.cacheDirectory))
 	logtext.WriteString(fmt.Sprintf("SD Card Template Directory:       %s\n", cmd.sdcardTemplateDirectory))
 	logtext.WriteString(fmt.Sprintf("Base Configuration File:          %s\n", cmd.baseConfigurationPath))
 	logtext.WriteString(fmt.Sprintf("Merge Configuration File:         %s\n", cmd.mergeConfigurationPath))
 	logtext.WriteString(fmt.Sprintf("Hot folder:                       %s\n", cmd.hotFolderPath))
 	logtext.WriteString(fmt.Sprintf("Merged Configuration Directory:   %s\n", cmd.mergedConfigurationDirectory))
 	logtext.WriteString(fmt.Sprintf("  - Write ATV:                    %v\n", cmd.mergedConfigurationsWriteAtv))
-	logtext.WriteString(fmt.Sprintf("  - Write ECS:                    %v\n", cmd.mergedConfigurationsWriteEcs))
+	logtext.WriteString(fmt.Sprintf("  - Write ECS (unencrypted):      %v\n", cmd.mergedConfigurationsWriteUnencryptedEcs))
+	logtext.WriteString(fmt.Sprintf("  - Write ECS (encrypted):        %v\n", cmd.mergedConfigurationsWriteEncryptedEcs))
 	logtext.WriteString(fmt.Sprintf("Update Package Directory:         %s\n", cmd.updatePackageDirectory))
+	logtext.WriteString(fmt.Sprintf("External Tools:\n"))
+	logtext.WriteString(fmt.Sprintf("  - OpenSSL:                      %s\n", opensslBinaryPath))
 	logtext.WriteString(fmt.Sprintf("--- Configuration End ---"))
 	log.Info(logtext.String())
+
+	// abort, if writing encrypted ecs containers is enabled, but the openssl is not available
+	if cmd.mergedConfigurationsWriteEncryptedEcs && len(opensslBinaryPath) == 0 {
+		return fmt.Errorf("Writing encrypted ECS containers is enabled, but the OpenSSL executable was not found")
+	}
+
+	// initialize the certificate manager
+	certificateCacheDirectory := filepath.Join(cmd.cacheDirectory, "certificates")
+	cmd.certificateManager = certmgr.NewCertificateManager(certificateCacheDirectory, deviceDatabaseUser, deviceDatabasePassword)
 
 	return nil
 }

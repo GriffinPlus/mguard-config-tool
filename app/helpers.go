@@ -7,12 +7,18 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/griffinplus/mguard-config-tool/mguard/atv"
 	"github.com/griffinplus/mguard-config-tool/mguard/ecs"
 	log "github.com/sirupsen/logrus"
 )
+
+// Regex matching the expected name pattern of mGuard configuration files that are dropped into the hot-folder
+// of the service. These files are expected to be named using the mGuards serial number, if encrypted ECS containers
+// have to be generated.
+var filePatternRegex, _ = regexp.Compile(`^([0-9]{10})\.(?:atv|ecs|tgz)$`)
 
 // loadConfigurationFile loads the specified ATV/ECS file and returns an ECS container with the mGuard configuration.
 // If the file is an ATV file, the missing parts in the ECS container are filled with defaults. If the path is an
@@ -149,7 +155,7 @@ func exePath() (string, error) {
 }
 
 // isPossiblemGuardConfigurationFile gives an educated guess whether the specified filename looks like a
-// mGuard configuration file.
+// mGuard configuration file that ends with one of the following extensions: '.atv', '.ecs' or '.tgz'.
 func isPossiblemGuardConfigurationFile(path string) (bool, error) {
 
 	stats, err := os.Stat(path)
@@ -170,6 +176,22 @@ func isPossiblemGuardConfigurationFile(path string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+// getSerialNumberFrommGuardConfigurationFileName gives an educated guess whether the specified filename
+// looks like a mGuard configuration file that that consists of an mGuard serial number and one of the
+// following extensions '.atv', '.ecs' or '.tgz'. If the filename does not match the expected pattern,
+// nil is returned.
+func getSerialNumberFrommGuardConfigurationFileName(path string) (*string, error) {
+
+	// check whether the base name matches the serial number pattern
+	filename := filepath.Base(path)
+	match := filePatternRegex.FindStringSubmatch(filename)
+	if len(match) != 2 {
+		return nil, nil
+	}
+
+	return &match[1], nil
 }
 
 // zipFiles puts the specified files into a zip archive at the specified location.

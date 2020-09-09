@@ -49,10 +49,22 @@ func (cmd *ServiceCommand) Execute(args []string, r <-chan svc.ChangeRequest, ch
 	err = filepath.Walk(cmd.hotFolderPath, func(path string, info os.FileInfo, err error) error {
 		path, err = filepath.Abs(path)
 		if err == nil {
-			isConfFile, err := isPossiblemGuardConfigurationFile(path)
-			if err == nil && isConfFile {
-				log.Debugf("Found possible configuration file: %s", path)
-				filesInHotFolder[path] = time.Now()
+			if cmd.mergedConfigurationsWriteEncryptedEcs {
+				// encrypted ECS containers should be generated
+				// => the files must bring along the serial number with the file name
+				serial, err := getSerialNumberFrommGuardConfigurationFileName(path)
+				if err == nil && serial != nil {
+					log.Debugf("Found possible configuration file: %s", path)
+					filesInHotFolder[path] = time.Now()
+				}
+			} else {
+				// encrypted ECS containers are not needed
+				// => any file name is ok
+				isConfFile, err := isPossiblemGuardConfigurationFile(path)
+				if err == nil && isConfFile {
+					log.Debugf("Found possible configuration file: %s", path)
+					filesInHotFolder[path] = time.Now()
+				}
 			}
 		}
 		return nil
@@ -100,12 +112,27 @@ loop:
 				log.Debugf("Created file: %s", event.Name)
 				path, err := filepath.Abs(event.Name)
 				if err == nil {
-					isConfFile, err := isPossiblemGuardConfigurationFile(path)
-					if err == nil && isConfFile {
-						filesInHotFolder[path] = time.Now()
-						if !hotFolderTimerRunning {
-							hotFolderTimer.Reset(hotFolderProcessingCycle)
-							hotFolderTimerRunning = true
+					if cmd.mergedConfigurationsWriteEncryptedEcs {
+						// encrypted ECS containers should be generated
+						// => the files must bring along the serial number with the file name
+						serial, err := getSerialNumberFrommGuardConfigurationFileName(path)
+						if err == nil && serial != nil {
+							filesInHotFolder[path] = time.Now()
+							if !hotFolderTimerRunning {
+								hotFolderTimer.Reset(hotFolderProcessingCycle)
+								hotFolderTimerRunning = true
+							}
+						}
+					} else {
+						// encrypted ECS containers are not needed
+						// => any file name is ok
+						isConfFile, err := isPossiblemGuardConfigurationFile(path)
+						if err == nil && isConfFile {
+							filesInHotFolder[path] = time.Now()
+							if !hotFolderTimerRunning {
+								hotFolderTimer.Reset(hotFolderProcessingCycle)
+								hotFolderTimerRunning = true
+							}
 						}
 					}
 				}
@@ -132,12 +159,27 @@ loop:
 				log.Debugf("Modified file: %s", event.Name)
 				path, err := filepath.Abs(event.Name)
 				if err == nil {
-					isConfFile, err := isPossiblemGuardConfigurationFile(path)
-					if err == nil && isConfFile {
-						filesInHotFolder[path] = time.Now()
-						if !hotFolderTimerRunning {
-							hotFolderTimer.Reset(hotFolderProcessingCycle)
-							hotFolderTimerRunning = true
+					if cmd.mergedConfigurationsWriteEncryptedEcs {
+						// encrypted ECS containers should be generated
+						// => the files must bring along the serial number with the file name
+						serial, err := getSerialNumberFrommGuardConfigurationFileName(path)
+						if err == nil && serial != nil {
+							filesInHotFolder[path] = time.Now()
+							if !hotFolderTimerRunning {
+								hotFolderTimer.Reset(hotFolderProcessingCycle)
+								hotFolderTimerRunning = true
+							}
+						}
+					} else {
+						// encrypted ECS containers are not needed
+						// => any file name is ok
+						isConfFile, err := isPossiblemGuardConfigurationFile(path)
+						if err == nil && isConfFile {
+							filesInHotFolder[path] = time.Now()
+							if !hotFolderTimerRunning {
+								hotFolderTimer.Reset(hotFolderProcessingCycle)
+								hotFolderTimerRunning = true
+							}
 						}
 					}
 				}

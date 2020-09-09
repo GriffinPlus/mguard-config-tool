@@ -3,6 +3,7 @@
 package main
 
 import (
+	"crypto/x509"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -22,6 +23,27 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 	filename := filepath.Base(path)
 	filenameWithoutExtension := strings.TrimSuffix(filename, filepath.Ext(filename))
 	var err error
+
+	// extract the serial number of the mGuard, if ECS containers should be encrypted
+	var deviceCertificate *x509.Certificate
+	if cmd.mergedConfigurationsWriteEncryptedEcs {
+
+		// encrypted ECS containers should be generated
+		// => the files must bring along the serial number with the file name
+		serial, err := getSerialNumberFrommGuardConfigurationFileName(path)
+		if err != nil {
+			return err
+		}
+		if serial == nil {
+			return fmt.Errorf("The name of the configuration file (%s) does not match the required pattern (<serial>.(atv|ecs|tgz)", path)
+		}
+
+		// query the certificate manager for the appropriate device certificate
+		deviceCertificate, err = cmd.certificateManager.GetCertificate(*serial)
+		if err != nil {
+			return err
+		}
+	}
 
 	// load the merge configuration file
 	var mergeConfig *atv.MergeConfiguration
@@ -88,6 +110,7 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 
 		// write ATV file, if requested
 		if cmd.mergedConfigurationsWriteAtv {
+
 			atvFileName := filenameWithoutExtension + ".atv"
 			atvFilePath := filepath.Join(cmd.mergedConfigurationDirectory, atvFileName)
 			log.Infof("Writing ATV file (%s)...", atvFilePath)
@@ -98,19 +121,38 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 			}
 		}
 
-		// write ECS file, if requested
-		if cmd.mergedConfigurationsWriteEcs {
+		// write unencrypted ECS file, if requested
+		if cmd.mergedConfigurationsWriteUnencryptedEcs {
+
 			ecsFileName := filenameWithoutExtension + ".ecs"
 			ecsFilePath := filepath.Join(cmd.mergedConfigurationDirectory, ecsFileName)
-			log.Infof("Writing ECS file (%s)...", ecsFilePath)
+
+			log.Infof("Writing unencrypted ECS file (%s)...", ecsFilePath)
 			err = mergedEcs.ToFile(ecsFilePath)
 			if err != nil {
-				log.Errorf("Writing ECS file (%s) failed: %s", ecsFilePath, err)
+				log.Errorf("Writing unencrypted ECS file (%s) failed: %s", ecsFilePath, err)
 				return err
 			}
 		}
+
+		// write encrypted ECS file, if requested
+		if cmd.mergedConfigurationsWriteEncryptedEcs {
+
+			ecsFileName := filenameWithoutExtension + ".ecs.p7e"
+			ecsFilePath := filepath.Join(cmd.mergedConfigurationDirectory, ecsFileName)
+
+			log.Infof("Writing encrypted ECS file (%s)...", ecsFilePath)
+			err := ecs.ToEncryptedFile(ecsFilePath, deviceCertificate)
+			if err != nil {
+				log.Errorf("Writing encrypted ECS file (%s) failed: %s", ecsFilePath, err)
+				return err
+			}
+		}
+
 	} else {
+
 		log.Info("Output directory is not specified. Skipping generation of ATV/ECS files with the merged configuration.")
+
 	}
 
 	// build archive containing the contents of an sdcard that can be used to flash an mGuard with a

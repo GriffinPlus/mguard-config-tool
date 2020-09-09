@@ -21,7 +21,7 @@ comes into play.
 
 The *mGuard-Config-Tool* aims to ease handling *mGuard* configuration files. It's main features are:
 
-- Support for ATV files and (unencrypted) ECS containers
+- Support for ATV files and ECS containers (unencrypted + encrypted)
 - Tasks
   - User Management: Add users and set/verify passwords
   - Conditioning: Condition a configuration and convert formats (ATV <=> ECS)
@@ -218,13 +218,20 @@ The `service` subcommand provides access to the *Configuration Preparation Servi
 *mGuard-Config-Tool*, stays in the background and monitors a specific directory for ATV/ECS files (hot-folder technique).
 As soon as a new ATV/ECS file is dropped into the hot-folder, the service merges a specific mGuard base configuration with
 the dropped configuration and generates ATV/ECS files with the merged configuration. Furthermore the service generates a
-zip file containing everything that is needed to flash a specific firmware and to load an initial configuration into a
-mGuard device. This is particularly useful when preparing mGuards in production and allows to run (and update) the
-*mGuard-Config-Tool* on a server. By default the service is registered to run as `LocalSystem` which means that it runs
-with administrative rights on the machine it is installed on. This ensures that you do not run into permission issues when
-running it locally, but you are strongly encouraged to create a service account with the minimum rights the service needs
-to access the configured directories. This step is also required when working with shared folders on a network as
-`LocalSystem` is often not allowed to access file shares.
+zip file containing everything that is needed to flash a specific firmware and to load an initial configuration into a mGuard
+device. This is particularly useful when preparing mGuards in production and allows to run (and update) the *mGuard-Config-Tool*
+on a server. By default the service is registered to run as `LocalSystem` which means that it runs with administrative rights
+on the machine it is installed on. This ensures that you do not run into permission issues when running it locally, but you
+are strongly encouraged to create a service account with the minimum rights the service needs to access the configured
+directories. This step is also required when working with shared folders on a network as `LocalSystem` is often not allowed
+to access file shares.
+
+The name of the ATV/ECS files dropped into the hot-folder must match a specific pattern to get processed. The pattern depends
+on whether the service has to generate encrypted ECS containers. If the service generates unencrypted ECS containers or no
+ECS containers at all, the pattern is `*.(atv|ecs|tgz)`. If the service is configured to generate encrypted ECS containers
+the pattern includes the serial number of the mGuard and is `<serial>.(atv|ecs|tgz)`. The serial number uniquely identifies
+mGuard devices and allows to access the service to retrieve the appropriate device certificate that is needed to encrypt the
+generated ECS files.
 
 The `install` and `uninstall` subcommand installs respectively uninstalls the *mGuard-Config-Tool* as a windows service.
 The `start` and `stop` subcommands communicate with the Service Control Manager (SCM) to start/stop the installed service.
@@ -232,7 +239,7 @@ As for all services, the usual service control panel (`services.msc`) can also b
 service without installation and is used for debugging purposes only.
 
 ```
-service - Controls the mGuard configuration merging service
+service - Controls the mGuard Configuration Preparation Service (CPS)
 
   Usage:
 	service [install|uninstall|start|stop|debug]
@@ -255,6 +262,11 @@ be named `mguard-config-tool.yaml`. The default configuration is generated in th
 The default configuration file looks like the following:
 
 ```yaml
+cache:
+  path: ./data/cache                          # directory: cache for various files (e.g. downloaded certificates)
+device_database:                              # credentials for the mGuard device database (only needed when creating encrypted ECS files)
+  user: ""                                    # username to use when authenticating against the mGuard device database
+  password: ""                                # password to use when authenticating against the mGuard device database
 input:
   base_configuration:
     path: ./data/configs/default.atv          # file: base configuration (usually an ATV file)
@@ -267,10 +279,14 @@ input:
 output:
   merged_configurations:
     path: ./data/output-merged-configs        # directory: merged configurations are put here
-    write_atv: true                           # controls whether to generate an ATV file with the merged configuration
-    write_ecs: true                           # controls whether to generate an ECS file with the merged configuration
-  update_packages:
+    write_atv: true                           # controls whether to generate an ATV file with the merged configuration (true, false)
+    write_unencrypted_ecs: true               # controls whether to generate an unencrypted ECS file with the merged configuration (true, false)
+    write_encrypted_ecs: true                 # controls whether to generate an encrypted ECS file with the merged configuration (true, false)
+update_packages:
     path: ./data/output-update-packages       # directory: update packages with firmware and the merged configuration are put here
+tools:
+  openssl:
+    path: ""                                  # file: openssl executable (empty => search the PATH variable for the executable)
 ```
 
 The configured directories are created, if necessary and permissions allow that. Before the service can run, the base

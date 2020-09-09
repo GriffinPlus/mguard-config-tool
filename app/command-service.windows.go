@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/griffinplus/mguard-config-tool/mguard/atv"
+	"github.com/griffinplus/mguard-config-tool/mguard/certmgr"
 
 	"github.com/integrii/flaggy"
 	log "github.com/sirupsen/logrus"
@@ -16,23 +17,26 @@ import (
 
 // ServiceCommand represents the 'service' subcommand.
 type ServiceCommand struct {
-	serviceName                  string             // name of the service
-	serviceConfig                mgr.Config         // configuration of the service
-	configPath                   string             // path of the base configuration file
-	sdcardTemplateDirectory      string             // path of the directory containing the basic structure of an sdcard (incl. firmware files)
-	baseConfigurationPath        string             // path of the mguard configuration file to use as base configuration
-	mergeConfigurationPath       string             // path of the merge configuration file that defines which settings to merge into the base configuration
-	hotFolderPath                string             // path of the directory to watch for atv/ecs files with configurations to merge with the base configuration
-	mergedConfigurationDirectory string             // path of the directory where to store merged mguard configurations
-	mergedConfigurationsWriteAtv bool               // true to write an ATV file with the merged configuration, otherwise false
-	mergedConfigurationsWriteEcs bool               // true to write an ECS file with the merged configuration, otherwise false
-	updatePackageDirectory       string             // path of the directory where to store update packages (for use on an sdcard)
-	subcommand                   *flaggy.Subcommand // flaggy's subcommand representing the 'service' subcommand
-	installSubcommand            *flaggy.Subcommand // flaggy's subcommand representing the 'service install' subcommand
-	uninstallSubcommand          *flaggy.Subcommand // flaggy's subcommand representing the 'service uninstall' subcommand
-	startSubcommand              *flaggy.Subcommand // flaggy's subcommand representing the 'service start' subcommand
-	stopSubcommand               *flaggy.Subcommand // flaggy's subcommand representing the 'service stop' subcommand
-	debugSubcommand              *flaggy.Subcommand // flaggy's subcommand representing the 'service debug' subcommand
+	serviceName                             string                      // name of the service
+	serviceConfig                           mgr.Config                  // configuration of the service
+	cacheDirectory                          string                      // path of the directory where the service caches files
+	certificateManager                      *certmgr.CertificateManager // certificate manager that takes care of caching and downloading device certificates
+	configPath                              string                      // path of the base configuration file
+	sdcardTemplateDirectory                 string                      // path of the directory containing the basic structure of an sdcard (incl. firmware files)
+	baseConfigurationPath                   string                      // path of the mguard configuration file to use as base configuration
+	mergeConfigurationPath                  string                      // path of the merge configuration file that defines which settings to merge into the base configuration
+	hotFolderPath                           string                      // path of the directory to watch for atv/ecs files with configurations to merge with the base configuration
+	mergedConfigurationDirectory            string                      // path of the directory where to store merged mguard configurations
+	mergedConfigurationsWriteAtv            bool                        // true to write an ATV file with the merged configuration, otherwise false
+	mergedConfigurationsWriteUnencryptedEcs bool                        // true to write an unencrypted ECS file with the merged configuration, otherwise false
+	mergedConfigurationsWriteEncryptedEcs   bool                        // true to write an encrypted ECS file with the merged configuration, otherwise false
+	updatePackageDirectory                  string                      // path of the directory where to store update packages (for use on an sdcard)
+	subcommand                              *flaggy.Subcommand          // flaggy's subcommand representing the 'service' subcommand
+	installSubcommand                       *flaggy.Subcommand          // flaggy's subcommand representing the 'service install' subcommand
+	uninstallSubcommand                     *flaggy.Subcommand          // flaggy's subcommand representing the 'service uninstall' subcommand
+	startSubcommand                         *flaggy.Subcommand          // flaggy's subcommand representing the 'service start' subcommand
+	stopSubcommand                          *flaggy.Subcommand          // flaggy's subcommand representing the 'service stop' subcommand
+	debugSubcommand                         *flaggy.Subcommand          // flaggy's subcommand representing the 'service debug' subcommand
 }
 
 // NewServiceCommand creates a new command handling the 'service' subcommand.

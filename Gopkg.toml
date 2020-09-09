@@ -2,6 +2,10 @@
 # (sorted ascendingly by project name)
 
 [[constraint]]
+  name = "github.com/grantae/certinfo"
+  revision = "59d56a35515b3ab2326749924739cfe58facc991" # 2017/04/12 (master)
+
+[[constraint]]
   name = "github.com/otiai10/copy"
   version = "=v1.0.2"
 
@@ -24,6 +28,10 @@
 [[constraint]]
   name = "github.com/alecthomas/participle"
   version = "=0.3.0"
+
+[[constraint]]
+  name = "github.com/mozilla-services/pkcs7"
+  revision = "432b2356ecb18209c1cec25680b8a23632794f21"
 
 [[constraint]]
   name = "golang.org/x/sys"
