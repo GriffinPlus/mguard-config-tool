@@ -57,7 +57,7 @@ func NewServiceCommand() *ServiceCommand {
 func (cmd *ServiceCommand) AddFlaggySubcommand() *flaggy.Subcommand {
 
 	cmd.subcommand = flaggy.NewSubcommand("service")
-	cmd.subcommand.Description = "Controls the mGuard configuration merging service"
+	cmd.subcommand.Description = "Controls the mGuard Configuration Preparation Service (CPS)"
 
 	cmd.installSubcommand = flaggy.NewSubcommand("install")
 	cmd.installSubcommand.Description = "Install the windows service"
