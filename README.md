@@ -28,6 +28,22 @@ The *mGuard-Config-Tool* aims to ease handling *mGuard* configuration files. It'
   - Merging: Merge two configurations into one
 - On Windows: Service for merging configurations and creating update packages
 
+## Prerequisites
+
+Writing encrypted ECS containers requires the *openssl* application to be installed. The directory containing the *openssl*
+executable should be in the search path.
+
+### Linux
+
+On linux systems the *openssl* can be installed using the system's package manager. Usually it is already in the search path.
+
+### Windows
+
+On Windows systems the *openssl* can be downloaded [here](http://slproweb.com/products/Win32OpenSSL.html).
+The search path must be adjusted manually on your system to point to the appropriate directory (most likely:
+`C:\Program Files\OpenSSL-Win64\bin`). If you use the service mode only, you can also explicitly specify the path of the
+*openssl* executable in the service configuration (see below).
+
 ## Releases
 
 *mGuard-Config-Tool* is written in GO which makes it highly portable.
