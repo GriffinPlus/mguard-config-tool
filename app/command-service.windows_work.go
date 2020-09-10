@@ -142,7 +142,7 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 			ecsFilePath := filepath.Join(cmd.mergedConfigurationDirectory, ecsFileName)
 
 			log.Infof("Writing encrypted ECS file (%s)...", ecsFilePath)
-			err := ecs.ToEncryptedFile(ecsFilePath, deviceCertificate)
+			err := mergedEcs.ToEncryptedFile(ecsFilePath, deviceCertificate)
 			if err != nil {
 				log.Errorf("Writing encrypted ECS file (%s) failed: %s", ecsFilePath, err)
 				return err
