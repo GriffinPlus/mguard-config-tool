@@ -263,30 +263,30 @@ The default configuration file looks like the following:
 
 ```yaml
 cache:
-  path: ./data/cache                          # directory: cache for various files (e.g. downloaded certificates)
-device_database:                              # credentials for the mGuard device database (only needed when creating encrypted ECS files)
-  user: ""                                    # username to use when authenticating against the mGuard device database
-  password: ""                                # password to use when authenticating against the mGuard device database
+  path: ./data/cache                               # directory: cache for various files (e.g. downloaded certificates)
+device_database:                                   # credentials for the mGuard device database (only needed when creating encrypted ECS files)
+  user: ""                                         # username to use when authenticating against the mGuard device database
+  password: ""                                     # password to use when authenticating against the mGuard device database
 input:
   base_configuration:
-    path: ./data/configs/default.atv          # file: base configuration (usually an ATV file)
+    path: ./data/configs/default.atv               # file: base configuration (usually an ATV file)
   merge_configuration:
-    path: ""                                  # file: merge configuration (empty => merge all settings)
+    path: ./data/configs/mguard-secure-cloud.merge # file: merge configuration (empty => merge all settings)
   hotfolder:
-    path: ./data/input                        # directory: the hot-folder that is monitored for ATV/ECS files to process
+    path: ./data/input                             # directory: the hot-folder that is monitored for ATV/ECS files to process
   sdcard_template:
-    path: ./data/sdcard-template              # directory: basic sdcard structure (with firmware files)
+    path: ./data/sdcard-template                   # directory: basic sdcard structure (with firmware files)
 output:
   merged_configurations:
-    path: ./data/output-merged-configs        # directory: merged configurations are put here
-    write_atv: true                           # controls whether to generate an ATV file with the merged configuration (true, false)
-    write_unencrypted_ecs: true               # controls whether to generate an unencrypted ECS file with the merged configuration (true, false)
-    write_encrypted_ecs: true                 # controls whether to generate an encrypted ECS file with the merged configuration (true, false)
+    path: ./data/output-merged-configs             # directory: merged configurations are put here
+    write_atv: true                                # controls whether to generate an ATV file with the merged configuration (true, false)
+    write_unencrypted_ecs: true                    # controls whether to generate an unencrypted ECS file with the merged configuration (true, false)
+    write_encrypted_ecs: true                      # controls whether to generate an encrypted ECS file with the merged configuration (true, false)
 update_packages:
-    path: ./data/output-update-packages       # directory: update packages with firmware and the merged configuration are put here
+    path: ./data/output-update-packages            # directory: update packages with firmware and the merged configuration are put here
 tools:
   openssl:
-    path: ""                                  # file: openssl executable (empty => search the PATH variable for the executable)
+    path: ""                                       # file: openssl executable (empty => search the PATH variable for the executable)
 ```
 
 The configured directories are created, if necessary and permissions allow that. Before the service can run, the base
