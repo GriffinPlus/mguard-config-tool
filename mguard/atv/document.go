@@ -521,6 +521,13 @@ func (doc *document) MergeSelectively(other *document, config *MergeConfiguratio
 // WriteDocumentPart writes a part of the ATV document to the specified writer.
 func (doc *document) WriteDocumentPart(writer *strings.Builder, indent int) error {
 
+	// write opening comment
+	line := "// mGuard Configuration Profile\n"
+	_, err := writer.WriteString(line)
+	if err != nil {
+		return err
+	}
+
 	var lastNodeType reflect.Type
 	for _, node := range doc.Nodes {
 
@@ -536,6 +543,13 @@ func (doc *document) WriteDocumentPart(writer *strings.Builder, indent int) erro
 		if err != nil {
 			return err
 		}
+	}
+
+	// write closing comment
+	line = "// End of configuration profile\n"
+	_, err = writer.WriteString(line)
+	if err != nil {
+		return err
 	}
 
 	return nil
