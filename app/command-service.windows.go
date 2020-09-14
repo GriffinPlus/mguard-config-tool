@@ -26,6 +26,8 @@ type ServiceCommand struct {
 	baseConfigurationPath                   string                      // path of the mguard configuration file to use as base configuration
 	mergeConfigurationPath                  string                      // path of the merge configuration file that defines which settings to merge into the base configuration
 	hotFolderPath                           string                      // path of the directory to watch for atv/ecs files with configurations to merge with the base configuration
+	passwordsRoot                           string                      // password of user 'root'
+	passwordsAdmin                          string                      // password of user 'admin'
 	mergedConfigurationDirectory            string                      // path of the directory where to store merged mguard configurations
 	mergedConfigurationsWriteAtv            bool                        // true to write an ATV file with the merged configuration, otherwise false
 	mergedConfigurationsWriteUnencryptedEcs bool                        // true to write an unencrypted ECS file with the merged configuration, otherwise false

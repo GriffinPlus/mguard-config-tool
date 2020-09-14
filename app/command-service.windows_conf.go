@@ -54,6 +54,16 @@ var settingInputHotfolderPath = setting{
 	"./data/input",
 }
 
+var settingInputPasswordsRoot = setting{
+	"input.passwords.root",
+	"",
+}
+
+var settingInputPasswordsAdmin = setting{
+	"input.passwords.admin",
+	"",
+}
+
 var settingOutputMergedConfigurationsPath = setting{
 	"output.merged_configurations.path",
 	"./data/output-merged-configs",
@@ -97,6 +107,8 @@ var allSettings = []setting{
 	settingInputBaseConfigurationPath,
 	settingInputMergeConfigurationPath,
 	settingInputHotfolderPath,
+	settingInputPasswordsRoot,
+	settingInputPasswordsAdmin,
 	settingOutputMergedConfigurationsPath,
 	settingOutputMergedConfigurationsWriteAtv,
 	settingOutputMergedConfigurationsWriteUnencryptedEcs,
@@ -173,7 +185,7 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	// input: sdcard template path (must be a directory)
 	log.Debugf("Setting '%s': '%s'", settingInputSdCardTemplatePath.path, conf.GetString(settingInputSdCardTemplatePath.path))
 	cmd.sdcardTemplateDirectory = conf.GetString(settingInputSdCardTemplatePath.path)
-	if len(cmd.sdcardTemplateDirectory) > 0 { // setting is optional
+	if len(cmd.sdcardTemplateDirectory) > 0 {
 		if filepath.IsAbs(cmd.sdcardTemplateDirectory) {
 			cmd.sdcardTemplateDirectory = filepath.Clean(cmd.sdcardTemplateDirectory)
 		} else {
@@ -183,6 +195,8 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 			}
 			cmd.sdcardTemplateDirectory = path
 		}
+	} else {
+		return fmt.Errorf("setting '%s' is not set.", settingInputSdCardTemplatePath.path)
 	}
 
 	// input: base configuration file
@@ -233,6 +247,14 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	} else {
 		return fmt.Errorf("setting '%s' is not set", settingInputHotfolderPath.path)
 	}
+
+	// input: password for user 'root'
+	log.Debugf("Setting '%s': '%s'", settingInputPasswordsRoot.path, conf.GetString(settingInputPasswordsRoot.path))
+	cmd.passwordsRoot = conf.GetString(settingInputPasswordsRoot.path)
+
+	// input: password for user 'admin'
+	log.Debugf("Setting '%s': '%s'", settingInputPasswordsAdmin.path, conf.GetString(settingInputPasswordsAdmin.path))
+	cmd.passwordsAdmin = conf.GetString(settingInputPasswordsAdmin.path)
 
 	// output: merged configuration directory
 	log.Debugf("Setting '%s': '%s'", settingOutputMergedConfigurationsPath.path, conf.GetString(settingOutputMergedConfigurationsPath.path))
@@ -332,6 +354,9 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	logtext.WriteString(fmt.Sprintf("Base Configuration File:          %s\n", cmd.baseConfigurationPath))
 	logtext.WriteString(fmt.Sprintf("Merge Configuration File:         %s\n", cmd.mergeConfigurationPath))
 	logtext.WriteString(fmt.Sprintf("Hot folder:                       %s\n", cmd.hotFolderPath))
+	logtext.WriteString(fmt.Sprintf("Passwords:\n"))
+	logtext.WriteString(fmt.Sprintf("  - root:                         %s\n", cmd.passwordsRoot))
+	logtext.WriteString(fmt.Sprintf("  - admin:                        %s\n", cmd.passwordsAdmin))
 	logtext.WriteString(fmt.Sprintf("Merged Configuration Directory:   %s\n", cmd.mergedConfigurationDirectory))
 	logtext.WriteString(fmt.Sprintf("  - Write ATV:                    %v\n", cmd.mergedConfigurationsWriteAtv))
 	logtext.WriteString(fmt.Sprintf("  - Write ECS (unencrypted):      %v\n", cmd.mergedConfigurationsWriteUnencryptedEcs))

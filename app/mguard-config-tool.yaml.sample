@@ -10,6 +10,9 @@ input:
     path: ./data/configs/mguard-secure-cloud.merge # file: merge configuration (empty => merge all settings)
   hotfolder:
     path: ./data/input                             # directory: the hot-folder that is monitored for ATV/ECS files to process
+  passwords:
+    root: ""                                       # password for user 'root' (empty => do not touch the password)
+    admin: ""                                      # password for user 'admin' (empty => do not touch the password)
   sdcard_template:
     path: ./data/sdcard-template                   # directory: basic sdcard structure (with firmware files)
 output:

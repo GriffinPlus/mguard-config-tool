@@ -290,6 +290,9 @@ input:
     path: ./data/configs/mguard-secure-cloud.merge # file: merge configuration (empty => merge all settings)
   hotfolder:
     path: ./data/input                             # directory: the hot-folder that is monitored for ATV/ECS files to process
+  passwords:
+    root: ""                                       # password for user 'root' (empty => do not touch the password)
+    admin: ""                                      # password for user 'admin' (empty => do not touch the password)
   sdcard_template:
     path: ./data/sdcard-template                   # directory: basic sdcard structure (with firmware files)
 output:
@@ -313,16 +316,15 @@ the sdcard template files are missing, the service will fail to start.
 The *update package* is a zip file that contains all files that need to be copied to an sdcard to flash the mGuard to the
 desired version and install the merged configuration. Depending on the `output.update_packages.configuration` setting in the
 service configuration an ATV file (`Rescue Config/preconfig.atv`), an unencrypted ECS container  (`ECS.tgz`) or an encrypted
-ECS container (`<serial>.ecs.p7e`) is deployed. The preconfiguration script (`Rescue Config/preconfig.sh`) shipped along with
-the repository already takes care of the three ways to load the configuration into the mGuard. Nevertheless you should adjust
-it to your needs, especially the passwords for *root* and *admin* are set there, when an ATV file is used. When editing
-`preconfig.sh` you MUST ensure that you use LF line endings. Using CRLF (windows standard) renders the script unexecutable!
+ECS container (`<serial>.ecs.p7e`) is deployed. The preconfiguration script (`Rescue Config/preconfig.sh`) that is is executed
+after the firmware has been flashed successfully is generated from a template (`Rescue Config/preconfig.sh.tmpl`) and tailored
+to the needs of the chosen configuration. When editing `preconfig.sh.tmpl` you MUST ensure that you use LF line endings.
+Using CRLF (windows standard) renders the script unexecutable!
 
 **Beware:** ATV files and unencrypted ECS containers contain unencrypted secrets like VPN certificates. Furthermore using ATV
 files implies setting passwords in plaintext! Therefore the most secure way to get a configuration into an mGuard is to use
 the encrypted ECS container. ATV file and unencrypted ECS container should only be used when there is an issue with accessing
 the device database to retrieve mGuard device certificates needed to encrypt ECS containers.
-
 
 ## Known Limitations
 

@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/griffinplus/mguard-config-tool/mguard/atv"
 
@@ -105,6 +106,16 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 		return err
 	}
 
+	// set the password for user 'root', if configured
+	if len(cmd.passwordsRoot) > 0 {
+		mergedEcs.Users.SetPassword("root", cmd.passwordsRoot)
+	}
+
+	// set the password for user 'admin', if configured
+	if len(cmd.passwordsAdmin) > 0 {
+		mergedEcs.Users.SetPassword("admin", cmd.passwordsAdmin)
+	}
+
 	// write ATV/ECS files containing the merged result
 	if len(cmd.mergedConfigurationDirectory) > 0 {
 
@@ -167,20 +178,69 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 		}
 		defer os.RemoveAll(scratchDir)
 
-		// copy files from sdcard template
-		if len(cmd.sdcardTemplateDirectory) > 0 {
-			src := cmd.sdcardTemplateDirectory + string(filepath.Separator)
-			dest := scratchDir + string(filepath.Separator)
-			err := copy.Copy(src, dest)
-			if err != nil {
-				log.Errorf("Copying sdcard template files into scratch directory failed: %s", err)
-				return err
-			}
-		} else {
-			log.Errorf("The sdcard template directory is not specified. Skipping adding files from template to update package.")
+		// copy files from sdcard template (always configured)
+		src := cmd.sdcardTemplateDirectory + string(filepath.Separator)
+		dest := scratchDir + string(filepath.Separator)
+		err = copy.Copy(src, dest)
+		if err != nil {
+			log.Errorf("Copying sdcard template files into scratch directory failed: %s", err)
+			return err
+		}
+
+		// process template 'preconfig.sh.tmpl'
+		// ------------------------------------------------------------------------------------------------------------
+
+		// parse the template
+		templatePath := filepath.Join(scratchDir, "Rescue Config", "preconfig.sh.tmpl")
+		renderedTemplatePath := filepath.Join(scratchDir, "Rescue Config", "preconfig.sh")
+		template, err := template.ParseFiles(templatePath)
+		if err != nil {
+			log.Errorf("Parsing preconfig.sh.tmpl failed: %s", err)
+			return err
+		}
+
+		// initialize dummy template data
+		data := struct {
+			Atv           bool
+			RootPassword  string
+			AdminPassword string
+		}{
+			false,
+			"XXX",
+			"XXX",
+		}
+
+		// replace passwords with real passwords, if an ATV file is used
+		// (ECS containers encorporate hashed passwords and don't need them)
+		if cmd.updatePackageConfiguration == config_atv {
+			data.Atv = true
+			data.RootPassword = cmd.passwordsRoot
+			data.AdminPassword = cmd.passwordsAdmin
+		}
+
+		// render the template
+		f, err := os.Create(renderedTemplatePath)
+		if err != nil {
+			log.Errorf("Opening preconfig.sh failed: %s", err)
+			return err
+		}
+		defer f.Close()
+		err = template.Execute(f, data)
+		if err != nil {
+			log.Errorf("Executing template preconfig.sh.tmpl and writing to file failed: %s", err)
+			return err
+		}
+		f.Close()
+
+		// remove template file from the temporary directory
+		err = os.Remove(templatePath)
+		if err != nil {
+			log.Errorf("Removing preconfig.sh.tmpl failed: %s", err)
+			return err
 		}
 
 		// write configuration
+		// ------------------------------------------------------------------------------------------------------------
 		switch cmd.updatePackageConfiguration {
 
 		case config_atv:
