@@ -20,6 +20,7 @@ output:
     write_encrypted_ecs: true                      # controls whether to generate an encrypted ECS file with the merged configuration (true, false)
   update_packages:
     path: ./data/output-update-packages            # directory: update packages with firmware and the merged configuration are put here
+    configuration: encrypted_ecs                   # configuration to put into the update package (atv, unencrypted_ecs, encrypted_ecs)
 tools:
   openssl:
     path: ""                                       # file: openssl executable (empty => search the PATH variable for the executable)

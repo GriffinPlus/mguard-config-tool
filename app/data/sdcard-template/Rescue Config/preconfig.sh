@@ -7,14 +7,21 @@
 # abort execution on the first error
 set -e
 
-# load initial configuration
-gaiconfig --silent --set-all < /bootstrap/preconfig.atv
+if [[ -e "/bootstrap/preconfig.atv" ]]; then
 
-# save the current configuration into a profile, so users can restore it
-gaiconfig --get-all > "/gai/profiles/Custom Factory Defaults.atv"
+    # load initial configuration
+    gaiconfig --silent --set-all < /bootstrap/preconfig.atv
 
-# set passwords
-ROOT_PASSWORD="root"
-ADMIN_PASSWORD="mGuard"
-echo -e "$ROOT_PASSWORD\n$ROOT_PASSWORD" | passwd root
-echo -e "$ADMIN_PASSWORD\n$ADMIN_PASSWORD" | passwd admin
+    # save the current configuration into a profile, so users can restore it
+    gaiconfig --get-all > "/gai/profiles/Custom Factory Defaults.atv"
+
+    # set passwords
+    ROOT_PASSWORD="root"
+    ADMIN_PASSWORD="mGuard"
+    echo -e "$ROOT_PASSWORD\n$ROOT_PASSWORD" | passwd root
+    echo -e "$ADMIN_PASSWORD\n$ADMIN_PASSWORD" | passwd admin
+
+fi
+
+# reboot to enter normal operation
+exec touch /bootstrap/reboot-please

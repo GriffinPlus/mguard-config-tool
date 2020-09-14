@@ -79,6 +79,11 @@ var settingOutputUpdatePackagesPath = setting{
 	"./data/output-update-packages",
 }
 
+var settingOutputUpdatePackagesConfiguration = setting{
+	"output.update_packages.configuration",
+	"encrypted_ecs",
+}
+
 var settingOpenSslBinaryPath = setting{
 	"tools.openssl.path",
 	"",
@@ -97,6 +102,7 @@ var allSettings = []setting{
 	settingOutputMergedConfigurationsWriteUnencryptedEcs,
 	settingOutputMergedConfigurationsWriteEncryptedEcs,
 	settingOutputUpdatePackagesPath,
+	settingOutputUpdatePackagesConfiguration,
 	settingOpenSslBinaryPath,
 }
 
@@ -273,6 +279,20 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 		}
 	}
 
+	// output: update package configuration
+	log.Debugf("Setting '%s': '%s'", settingOutputUpdatePackagesConfiguration.path, conf.GetString(settingOutputUpdatePackagesConfiguration.path))
+	updatePackageConfiguration := conf.GetString(settingOutputUpdatePackagesConfiguration.path)
+	switch updatePackageConfiguration {
+	case "atv":
+		cmd.updatePackageConfiguration = config_atv
+	case "unencrypted_ecs":
+		cmd.updatePackageConfiguration = config_unencrypted_ecs
+	case "encrypted_ecs":
+		cmd.updatePackageConfiguration = config_encrypted_ecs
+	default:
+		return fmt.Errorf("setting '%s' is invalid (please choose one of the following: 'atv', 'unencrypted_ecs', 'encrypted_ecs')", settingOutputUpdatePackagesConfiguration.path)
+	}
+
 	// tools: openssl binary path
 	log.Debugf("Setting '%s': '%s'", settingOpenSslBinaryPath.path, conf.GetString(settingOpenSslBinaryPath.path))
 	opensslBinaryPath := conf.GetString(settingOpenSslBinaryPath.path)
@@ -317,6 +337,7 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	logtext.WriteString(fmt.Sprintf("  - Write ECS (unencrypted):      %v\n", cmd.mergedConfigurationsWriteUnencryptedEcs))
 	logtext.WriteString(fmt.Sprintf("  - Write ECS (encrypted):        %v\n", cmd.mergedConfigurationsWriteEncryptedEcs))
 	logtext.WriteString(fmt.Sprintf("Update Package Directory:         %s\n", cmd.updatePackageDirectory))
+	logtext.WriteString(fmt.Sprintf("  - Configuration:                %s\n", cmd.updatePackageConfiguration))
 	logtext.WriteString(fmt.Sprintf("External Tools:\n"))
 	logtext.WriteString(fmt.Sprintf("  - OpenSSL:                      %s\n", opensslBinaryPath))
 	logtext.WriteString(fmt.Sprintf("--- Configuration End ---"))

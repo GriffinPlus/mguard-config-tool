@@ -31,6 +31,7 @@ type ServiceCommand struct {
 	mergedConfigurationsWriteUnencryptedEcs bool                        // true to write an unencrypted ECS file with the merged configuration, otherwise false
 	mergedConfigurationsWriteEncryptedEcs   bool                        // true to write an encrypted ECS file with the merged configuration, otherwise false
 	updatePackageDirectory                  string                      // path of the directory where to store update packages (for use on an sdcard)
+	updatePackageConfiguration              ConfigurationType           // Configuration to put into the update package (for use on an sdcard)
 	subcommand                              *flaggy.Subcommand          // flaggy's subcommand representing the 'service' subcommand
 	installSubcommand                       *flaggy.Subcommand          // flaggy's subcommand representing the 'service install' subcommand
 	uninstallSubcommand                     *flaggy.Subcommand          // flaggy's subcommand representing the 'service uninstall' subcommand
@@ -38,6 +39,14 @@ type ServiceCommand struct {
 	stopSubcommand                          *flaggy.Subcommand          // flaggy's subcommand representing the 'service stop' subcommand
 	debugSubcommand                         *flaggy.Subcommand          // flaggy's subcommand representing the 'service debug' subcommand
 }
+
+type ConfigurationType string
+
+const (
+	config_atv             ConfigurationType = "ATV"
+	config_unencrypted_ecs                   = "ECS (unencrypted)"
+	config_encrypted_ecs                     = "ECS (encrypted)"
+)
 
 // NewServiceCommand creates a new command handling the 'service' subcommand.
 func NewServiceCommand() *ServiceCommand {

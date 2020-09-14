@@ -180,12 +180,34 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 			log.Errorf("The sdcard template directory is not specified. Skipping adding files from template to update package.")
 		}
 
-		// write ATV container with the merged configuration
-		atvFilePath := filepath.Join(scratchDir, "Rescue Config", "preconfig.atv")
-		err = mergedEcs.Atv.ToFile(atvFilePath)
-		if err != nil {
-			log.Errorf("Writing ATV file (%s) failed: %s", atvFilePath, err)
-			return err
+		// write configuration
+		switch cmd.updatePackageConfiguration {
+
+		case config_atv:
+			atvFilePath := filepath.Join(scratchDir, "Rescue Config", "preconfig.atv")
+			err = mergedEcs.Atv.ToFile(atvFilePath)
+			if err != nil {
+				log.Errorf("Writing ATV file (%s) failed: %s", atvFilePath, err)
+				return err
+			}
+
+		case config_unencrypted_ecs:
+			ecsFileName := "ECS.tgz"
+			ecsFilePath := filepath.Join(scratchDir, ecsFileName)
+			err = mergedEcs.ToFile(ecsFilePath)
+			if err != nil {
+				log.Errorf("Writing unencrypted ECS file (%s) failed: %s", ecsFilePath, err)
+				return err
+			}
+
+		case config_encrypted_ecs:
+			ecsFileName := filenameWithoutExtension + ".ecs.p7e"
+			ecsFilePath := filepath.Join(scratchDir, ecsFileName)
+			err := mergedEcs.ToEncryptedFile(ecsFilePath, deviceCertificate)
+			if err != nil {
+				log.Errorf("Writing encrypted ECS file (%s) failed: %s", ecsFilePath, err)
+				return err
+			}
 		}
 
 		// create a package wrapping everything up using zip
