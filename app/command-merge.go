@@ -17,7 +17,7 @@ type MergeCommand struct {
 	inFilePath2       string             // the second file to merge
 	inMergeConfigPath string             // the configuration file controlling the merge process (optional)
 	outAtvFilePath    string             // the file receiving the merged result (ATV format)
-	outEcsFilePath    string             // the file receiving the merged result (ECS container)
+	outEcsFilePath    string             // the file receiving the merged result (ECS container, unencrypted)
 	subcommand        *flaggy.Subcommand // flaggy's subcommand representing the 'merge' subcommand
 }
 
@@ -34,8 +34,8 @@ func (cmd *MergeCommand) AddFlaggySubcommand() *flaggy.Subcommand {
 	cmd.subcommand.AddPositionalValue(&cmd.inFilePath1, "1st-file", 1, true, "First configuration file to merge")
 	cmd.subcommand.AddPositionalValue(&cmd.inFilePath2, "2nd-file", 2, true, "Second configuration file to merge")
 	cmd.subcommand.String(&cmd.inMergeConfigPath, "", "config", "Merge configuration file")
-	cmd.subcommand.String(&cmd.outAtvFilePath, "", "atv-out", "File receiving the merged configuration (ATV format, instead of stdout)")
-	cmd.subcommand.String(&cmd.outEcsFilePath, "", "ecs-out", "File receiving the merged configuration (ECS container, instead of stdout)")
+	cmd.subcommand.String(&cmd.outAtvFilePath, "", "atv-out", "File receiving the merged configuration (ATV format)")
+	cmd.subcommand.String(&cmd.outEcsFilePath, "", "ecs-out", "File receiving the merged configuration (ECS container, unencrypted, instead of stdout)")
 
 	flaggy.AttachSubcommand(cmd.subcommand, 1)
 

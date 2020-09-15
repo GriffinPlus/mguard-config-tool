@@ -71,11 +71,11 @@ used for emitting content only.
 
 ### Subcommand: user
 
-The `user` subcommand provides access to the user management. All operations run on ECS files only, but support an
-implicit conversion if an ATV file is specified. ATV files do not contain information about user accounts and
-passwords. By default the ECS container to work on is expected to be passed via *stdin* to ease scripting without
-generating temporary files. The output of these operations is an ECS container that is written to *stdout*.
-Optionally input and output can be regular files as well by specifying `--ecs-in` and `--ecs-out` appropriately.
+The `user` subcommand provides access to the user management. All operations run on ECS files only, but support an implicit
+conversion if an ATV file is specified. ATV files do not contain information about user accounts and passwords. By default
+the unencrypted ECS container to work on is expected to be passed via *stdin* to ease scripting without generating temporary
+files. The output of these operations is an unencrypted ECS container that is written to *stdout*. Optionally input and
+output can be regular files as well by specifying `--ecs-in` and `--ecs-out` appropriately.
 
 ```
 user - Add user and set/verify user passwords (ECS containers only).
@@ -108,8 +108,8 @@ add - Add a user.
   Flags:
        --version   Displays the program version string.
     -h --help      Displays help with available flag, subcommand, and positional value parameters.
-       --ecs-in    The ECS container (instead of stdin).
-       --ecs-out   File receiving the updated ECS container (instead of stdout).
+       --ecs-in    The ECS container (unencrypted, instead of stdin).
+       --ecs-out   File receiving the updated ECS container (unencrypted, instead of stdout).
        --verbose   Include additional messages that might help when problems occur.
 ```
 
@@ -128,8 +128,8 @@ set - Set the password a user (ECS containers only).
   Flags:
        --version   Displays the program version string.
     -h --help      Displays help with available flag, subcommand, and positional value parameters.
-       --ecs-in    The ECS container (instead of stdin).
-       --ecs-out   File receiving the updated ECS container (instead of stdout).
+       --ecs-in    The ECS container (unencrypted, instead of stdin).
+       --ecs-out   File receiving the updated ECS container (unencrypted, instead of stdout).
        --verbose   Include additional messages that might help when problems occur.
 ```
 
@@ -153,7 +153,7 @@ verify - Verify the password of a user (ECS containers only).
   Flags:
        --version   Displays the program version string.
     -h --help      Displays help with available flag, subcommand, and positional value parameters.
-       --ecs-in    The ECS container (instead of stdin).
+       --ecs-in    The ECS container (unencrypted, instead of stdin).
        --verbose   Include additional messages that might help when problems occur.
 ```
 
@@ -166,12 +166,12 @@ use with the mGuard web interface can be converted to an ECS file that can be us
 and vice versa.
 
 By default the ECS container to work on is expected to be passed via *stdin* to ease scripting without generating
-temporary files. The output of the operation is an ECS container that is written to *stdout*. Optionally input and
-output can be regular files as well by specifying `--ecs-in`, `--ecs-out` and `--atv-out` appropriately.
+temporary files. The output of the operation is an unencrypted ECS container that is written to *stdout*. Optionally
+input and output can be regular files as well by specifying `--ecs-in`, `--ecs-out` and `--atv-out` appropriately.
 
 If an ATV file is passed in and an ECS container is written the conditioned ATV file is stored in the ECS container and
 the missing parts in the ECS container are initialized with defaults. The defaults are the same a new mGuard comes with.
-If an ECS container is passwd in and an ATV file is written, the configuration stored in the ECS container is simply
+If an ECS container is passed in and an ATV file is written, the configuration stored in the ECS container is simply
 extracted and saved as an ATV file.
 
 ```
@@ -182,7 +182,7 @@ condition - Condition and/or convert a mGuard configuration file
     -h --help      Displays help with available flag, subcommand, and positional value parameters.
        --in        File containing the mGuard configuration to condition (ATV format or ECS container)
        --atv-out   File receiving the conditioned configuration (ATV format, instead of stdout)
-       --ecs-out   File receiving the conditioned configuration (ECS container, instead of stdout)
+       --ecs-out   File receiving the conditioned configuration (ECS container, unencrypted, instead of stdout)
        --verbose   Include additional messages that might help when problems occur.
 ```
 
@@ -206,8 +206,8 @@ selectively by specifying a merge configuration using `--config`. The merge conf
 that should be merged. At present only top-level settings are supported. Everything behind a `#` character is treated
 as a comment ([example](./app/data/configs/mguard-secure-cloud.merge)).
 
-By default the output of the operation is an ECS container that is written to *stdout*. The output can be written to
-a regular file as well by specifying `--ecs-out` and `--atv-out` appropriately.
+By default the output of the operation is an unencrypted ECS container that is written to *stdout*. The output can be
+written to a regular file as well by specifying `--ecs-out` and `--atv-out` appropriately.
 
 ```
 merge - Merge two mGuard configuration files into one
@@ -223,8 +223,8 @@ merge - Merge two mGuard configuration files into one
        --version   Displays the program version string.
     -h --help      Displays help with available flag, subcommand, and positional value parameters.
        --config    Merge configuration file
-       --atv-out   File receiving the merged configuration (ATV format, instead of stdout)
-       --ecs-out   File receiving the merged configuration (ECS container, instead of stdout)
+       --atv-out   File receiving the merged configuration (ATV format)
+       --ecs-out   File receiving the merged configuration (ECS container, unencrypted, instead of stdout)
        --verbose   Include additional messages that might help when problems occur.
 ```
 
@@ -233,21 +233,22 @@ merge - Merge two mGuard configuration files into one
 The `service` subcommand provides access to the *Configuration Preparation Service* (CPS). The CPS is part of the
 *mGuard-Config-Tool*, stays in the background and monitors a specific directory for ATV/ECS files (hot-folder technique).
 As soon as a new ATV/ECS file is dropped into the hot-folder, the service merges a specific mGuard base configuration with
-the dropped configuration and generates ATV/ECS files with the merged configuration. Furthermore the service generates a
-zip file containing everything that is needed to flash a specific firmware and to load an initial configuration into a mGuard
-device. This is particularly useful when preparing mGuards in production and allows to run (and update) the *mGuard-Config-Tool*
-on a server. By default the service is registered to run as `LocalSystem` which means that it runs with administrative rights
-on the machine it is installed on. This ensures that you do not run into permission issues when running it locally, but you
-are strongly encouraged to create a service account with the minimum rights the service needs to access the configured
-directories. This step is also required when working with shared folders on a network as `LocalSystem` is often not allowed
-to access file shares.
+the dropped configuration and generates ATV/ECS files with the merged configuration. The dropped ATV/ECS files *must not* be
+encrypted to allow the service to process it. The service generates a zip file containing everything that is needed to flash
+a specific firmware and to load an initial configuration into a mGuard device. This is particularly useful when preparing
+mGuards in production and allows to run (and update) the *mGuard-Config-Tool* on a server.
+
+By default the service is registered to run as `LocalSystem` which means that it runs with administrative rights on the machine
+it is installed on. This ensures that you do not run into permission issues when running it locally, but you are strongly
+encouraged to create a service account with the minimum rights the service needs to access the configured directories. This
+step is also required when working with shared folders on a network as `LocalSystem` is often not allowed to access file shares.
 
 The name of the ATV/ECS files dropped into the hot-folder must match a specific pattern to get processed. The pattern depends
 on whether the service has to generate encrypted ECS containers. If the service generates unencrypted ECS containers or no
 ECS containers at all, the pattern is `*.(atv|ecs|tgz)`. If the service is configured to generate encrypted ECS containers
 the pattern includes the serial number of the mGuard and is `<serial>.(atv|ecs|tgz)`. The serial number uniquely identifies
-mGuard devices and allows to access the service to retrieve the appropriate device certificate that is needed to encrypt the
-generated ECS files.
+mGuard devices and allows the service to retrieve the appropriate device certificates that are needed to encrypt generated
+ECS files for specific mGuards.
 
 The `install` and `uninstall` subcommand installs respectively uninstalls the *mGuard-Config-Tool* as a windows service.
 The `start` and `stop` subcommands communicate with the Service Control Manager (SCM) to start/stop the installed service.
@@ -322,9 +323,9 @@ to the needs of the chosen configuration. When editing `preconfig.sh.tmpl` you M
 Using CRLF (windows standard) renders the script unexecutable!
 
 **Beware:** ATV files and unencrypted ECS containers contain unencrypted secrets like VPN certificates. Furthermore using ATV
-files implies setting passwords in plaintext! Therefore the most secure way to get a configuration into an mGuard is to use
-the encrypted ECS container. ATV file and unencrypted ECS container should only be used when there is an issue with accessing
-the device database to retrieve mGuard device certificates needed to encrypt ECS containers.
+files implies setting passwords in plaintext! Therefore the most secure way to get a configuration into a mGuard is to use the
+encrypted ECS container. ATV files and unencrypted ECS containers should only be used when there is an issue with accessing
+the device database to retrieve mGuard device certificates needed to generate encrypted ECS containers.
 
 ## Known Limitations
 
