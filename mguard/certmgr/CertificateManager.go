@@ -10,8 +10,10 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // CertificateManager represents the mGuard device certificate manager.
@@ -22,15 +24,47 @@ type CertificateManager struct {
 }
 
 // NewCertificateManager returns a new device certificate manager.
-func NewCertificateManager(certificateCacheDirectory, deviceDatabaseUser, deviceDatabasePassword string) *CertificateManager {
+// The cache path may be empty to disable caching.
+// Username and password may be empty to let the certificate manager look into the mguard-device-database.yaml for credentials.
+func NewCertificateManager(certificateCacheDirectory, deviceDatabaseUser, deviceDatabasePassword string) (*CertificateManager, error) {
 
-	certman := CertificateManager{
+	mgr := CertificateManager{
 		certificateCacheDirectory: certificateCacheDirectory,
 		deviceDatabaseUser:        deviceDatabaseUser,
 		deviceDatabasePassword:    deviceDatabasePassword,
 	}
 
-	return &certman
+	// load credentials file, if username/password is empty
+	if len(mgr.deviceDatabaseUser) == 0 || len(mgr.deviceDatabasePassword) == 0 {
+
+		log.Debugf("Loading device database credentials from 'mguard-device-database.yaml'...")
+
+		// create new device database configuration
+		conf := viper.New()
+		conf.SetDefault("credentials.user", "")
+		conf.SetDefault("credentials.password", "")
+
+		// load device database configuration from 'mguard-device-database.yaml'
+		exePath, _ := exePath()
+		configPath := filepath.Join(filepath.Dir(exePath), "mguard-device-database.yaml")
+		basename := filepath.Base(configPath)
+		configName := strings.TrimSuffix(basename, filepath.Ext(basename))
+		configDir := filepath.Dir(configPath) + string(os.PathSeparator)
+		conf.SetConfigName(configName)
+		conf.SetConfigType("yaml")
+		conf.AddConfigPath(configDir)
+		err := conf.ReadInConfig()
+		if err != nil {
+			log.Errorf("Loading device database credentials from 'mguard-device-database.yaml' failed: %s", err)
+			return nil, err
+		}
+
+		// fetch settings out of the configuration
+		mgr.deviceDatabaseUser = conf.GetString("credentials.user")
+		mgr.deviceDatabasePassword = conf.GetString("credentials.password")
+	}
+
+	return &mgr, nil
 }
 
 // GetCertificate tries to get the device certificate for the mGuard with the specified serial number.
@@ -39,9 +73,11 @@ func NewCertificateManager(certificateCacheDirectory, deviceDatabaseUser, device
 func (mgr *CertificateManager) GetCertificate(serial string) (*x509.Certificate, error) {
 
 	// try to fetch the certificate from the cache
-	certificate, _ := mgr.getCertificateFromCache(serial)
-	if certificate != nil {
-		return certificate, nil
+	if len(mgr.certificateCacheDirectory) > 0 {
+		certificate, _ := mgr.getCertificateFromCache(serial)
+		if certificate != nil {
+			return certificate, nil
+		}
 	}
 
 	// try to download the certificate from the device database
@@ -51,7 +87,9 @@ func (mgr *CertificateManager) GetCertificate(serial string) (*x509.Certificate,
 	}
 
 	// put certificate into the cache
-	mgr.putCertificateIntoCache(serial, certificate)
+	if len(mgr.certificateCacheDirectory) > 0 {
+		mgr.putCertificateIntoCache(serial, certificate)
+	}
 
 	return certificate, nil
 }

@@ -24,16 +24,6 @@ var settingCachePath = setting{
 	"./data/cache",
 }
 
-var settingDeviceDatabaseUser = setting{
-	"device_database.user",
-	"",
-}
-
-var settingDeviceDatabasePassword = setting{
-	"device_database.password",
-	"",
-}
-
 var settingInputSdCardTemplatePath = setting{
 	"input.sdcard_template.path",
 	"./data/sdcard-template",
@@ -101,8 +91,6 @@ var settingOpenSslBinaryPath = setting{
 
 var allSettings = []setting{
 	settingCachePath,
-	settingDeviceDatabaseUser,
-	settingDeviceDatabasePassword,
 	settingInputSdCardTemplatePath,
 	settingInputBaseConfigurationPath,
 	settingInputMergeConfigurationPath,
@@ -173,14 +161,6 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	} else {
 		return fmt.Errorf("setting '%s' is not set.", settingCachePath.path)
 	}
-
-	// device database: user
-	log.Debugf("Setting '%s': '%s'", settingDeviceDatabaseUser.path, conf.GetString(settingDeviceDatabaseUser.path))
-	deviceDatabaseUser := conf.GetString(settingDeviceDatabaseUser.path)
-
-	// device database: password
-	log.Debugf("Setting '%s': '%s'", settingDeviceDatabasePassword.path, conf.GetString(settingDeviceDatabasePassword.path))
-	deviceDatabasePassword := conf.GetString(settingDeviceDatabasePassword.path)
 
 	// input: sdcard template path (must be a directory)
 	log.Debugf("Setting '%s': '%s'", settingInputSdCardTemplatePath.path, conf.GetString(settingInputSdCardTemplatePath.path))
@@ -374,8 +354,12 @@ func (cmd *ServiceCommand) loadServiceConfiguration(path string, createIfNotExis
 	}
 
 	// initialize the certificate manager
+	// (load credentials from mguard-device-database.yaml)
 	certificateCacheDirectory := filepath.Join(cmd.cacheDirectory, "certificates")
-	cmd.certificateManager = certmgr.NewCertificateManager(certificateCacheDirectory, deviceDatabaseUser, deviceDatabasePassword)
+	cmd.certificateManager, err = certmgr.NewCertificateManager(certificateCacheDirectory, "", "")
+	if err != nil {
+		return fmt.Errorf("Initializing the certificate manager failed: %v", err)
+	}
 
 	return nil
 }

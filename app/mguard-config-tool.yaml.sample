@@ -1,8 +1,5 @@
 cache:
   path: ./data/cache                               # directory: cache for various files (e.g. downloaded certificates)
-device_database:                                   # credentials for the mGuard device database (only needed when creating encrypted ECS files)
-  user: ""                                         # username to use when authenticating against the mGuard device database
-  password: ""                                     # password to use when authenticating against the mGuard device database
 input:
   base_configuration:
     path: ./data/configs/default.atv               # file: base configuration (usually an ATV file)

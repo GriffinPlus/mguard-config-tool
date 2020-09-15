@@ -198,8 +198,81 @@ func (container *Container) ToFile(path string) error {
 	return container.ToWriter(file)
 }
 
-// ToEncryptedFile writes the ECS container encrypted with the specified device certifivate to the specified file.
+// ToWriter writes the ECS container to the specified io.Writer.
+func (container *Container) ToWriter(writer io.Writer) error {
+
+	log.Debug("Writing ECS container...")
+
+	// update file buffers first to reflect the correct state of the documents
+	err := container.updateFileBuffers()
+	if err != nil {
+		return err
+	}
+
+	gzipWriter := gzip.NewWriter(writer)
+	defer gzipWriter.Close()
+
+	tarWriter := tar.NewWriter(gzipWriter)
+	defer tarWriter.Close()
+
+	time := time.Now()
+	err = writeDirectoryToTar(tarWriter, time, "aca")
+	if err != nil {
+		return err
+	}
+
+	files := []file{
+		container.fileCfg,
+		container.filePass,
+		container.fileSnmpd,
+		container.fileUsers,
+	}
+
+	for _, file := range files {
+		if len(file.Data) > 0 {
+			log.Debugf("  - file: %s...", file.Name)
+			err := writeFileToTar(tarWriter, file, time)
+			if err != nil {
+				log.Debugf("    ERROR: %s", err)
+				return err
+			}
+		} else {
+			log.Debugf("  - file: %s (SKIPPING)", container.fileCfg)
+		}
+	}
+
+	log.Debug("Writing ECS container succeeded.")
+	return nil
+}
+
+// ToEncryptedFile writes the ECS container encrypted with the specified device certificate to the specified file.
 func (container *Container) ToEncryptedFile(path string, deviceCertificate *x509.Certificate) error {
+
+	// create directories on the way, if necessary
+	path, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(filepath.Dir(path), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	// open the file for writing
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// write the encrypted ECS container
+	return container.ToEncryptedWriter(file, deviceCertificate)
+}
+
+// ToEncryptedWriter writes the ECS container encrypted with the specified device certificate to the specified io.Writer.
+func (container *Container) ToEncryptedWriter(writer io.Writer, deviceCertificate *x509.Certificate) error {
+
+	log.Debug("Writing encrypted ECS container...")
 
 	// determine the path of the openssl executable
 	opensslExecutablePath, err := GetOpensslExecutablePath()
@@ -250,60 +323,13 @@ func (container *Container) ToEncryptedFile(path string, deviceCertificate *x509
 	}
 
 	// write the encrypted ECS container to the final destination
-	log.Infof("Writing encrypted ECS file (%s)...", path)
-	err = ioutil.WriteFile(path, encryptedEcs.Bytes(), 644)
+	_, err = writer.Write(encryptedEcs.Bytes())
 	if err != nil {
-		log.Errorf("Writing encrypted ECS file (%s) failed: %s", path, err)
+		log.Errorf("Writing encrypted ECS container failed: %s", err)
 		return err
 	}
 
-	return nil
-}
-
-// ToWriter writes the ECS container to the specified io.Writer.
-func (container *Container) ToWriter(writer io.Writer) error {
-
-	log.Debug("Writing ECS container...")
-
-	// update file buffers first to reflect the correct state of the documents
-	err := container.updateFileBuffers()
-	if err != nil {
-		return err
-	}
-
-	gzipWriter := gzip.NewWriter(writer)
-	defer gzipWriter.Close()
-
-	tarWriter := tar.NewWriter(gzipWriter)
-	defer tarWriter.Close()
-
-	time := time.Now()
-	err = writeDirectoryToTar(tarWriter, time, "aca")
-	if err != nil {
-		return err
-	}
-
-	files := []file{
-		container.fileCfg,
-		container.filePass,
-		container.fileSnmpd,
-		container.fileUsers,
-	}
-
-	for _, file := range files {
-		if len(file.Data) > 0 {
-			log.Debugf("  - file: %s...", file.Name)
-			err := writeFileToTar(tarWriter, file, time)
-			if err != nil {
-				log.Debugf("    ERROR: %s", err)
-				return err
-			}
-		} else {
-			log.Debugf("  - file: %s (SKIPPING)", container.fileCfg)
-		}
-	}
-
-	log.Debug("Writing ECS container succeeded.")
+	log.Debug("Writing encrypted ECS container succeeded.")
 	return nil
 }
 
