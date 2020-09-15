@@ -28,22 +28,6 @@ The *mGuard-Config-Tool* aims to ease handling *mGuard* configuration files. It'
   - Merging: Merge two configurations into one
 - On Windows: Service for merging configurations and creating update packages
 
-## Prerequisites
-
-Writing encrypted ECS containers requires the *openssl* application to be installed. The directory containing the *openssl*
-executable should be in the search path.
-
-### Linux
-
-On linux systems the *openssl* can be installed using the system's package manager. Usually it is already in the search path.
-
-### Windows
-
-On Windows systems the *openssl* can be downloaded [here](http://slproweb.com/products/Win32OpenSSL.html).
-The search path must be adjusted manually on your system to point to the appropriate directory (most likely:
-`C:\Program Files\OpenSSL-Win64\bin`). If you use the service mode only, you can also explicitly specify the path of the
-*openssl* executable in the service configuration (see below).
-
 ## Releases
 
 *mGuard-Config-Tool* is written in GO which makes it highly portable.
@@ -63,19 +47,66 @@ popular target operating systems and platforms:
 If any other target operating system and/or platform is needed and the combination is supported by GO, please open an
 issue and we'll add support for it.
 
+## Prerequisites
+
+### OpenSSL
+
+Writing encrypted ECS containers requires the *openssl* application to be installed. The directory containing the *openssl*
+executable should be in the search path.
+
+#### Linux
+
+On linux systems the *openssl* can be installed using the system's package manager. Usually it is already in the search path.
+
+#### Windows
+
+On Windows systems the *openssl* can be downloaded [here](http://slproweb.com/products/Win32OpenSSL.html).
+The search path must be adjusted manually on your system to point to the appropriate directory (most likely:
+`C:\Program Files\OpenSSL-Win64\bin`). If you use the service mode only, you can also explicitly specify the path of the
+*openssl* executable in the service configuration (see below).
+
+### Device Database Access
+
+Writing encrypted ECS containers also requires access to the mGuard device database. To retrieve device certificates you
+have to register for an account. This can be done using the [registration form](http://update.registration.innominate.com/request_devcertcase.cgi).
+Although the mGuard is distributed by Phoenix Contact now, the URL contains the name of the original manufacturer
+*Innominate*, so don't suprised. Firthermote the registration form contains some fields, that are deprecated now and should
+be filled with fake data. So you can securely pass the following fields:
+
+- Reseller: TLK
+- Number of Devices: 100
+- Date of Purchase: 1.1.2010
+
+The registration process seems to require some manual interaction, so it may take some days. If you don't get an e-mail
+with the credentials to access the database, please contact the Phoenix Contact representative responsible for your
+company.
+
 ## Usage
 
 The *mGuard-Config-Tool* is a console application that uses subcommands to run different tasks. The application writes
 log messages to *stderr*, so it's easy to pipe them into a log file or discard them entirely. The *stdout* channel is
 used for emitting content only.
 
+If you intend to write encrypted ECS files, the *mGuard-Config-Tool* needs access to the mGuard device database to retrieve
+mGuard specific device certificates. See above on how to get access to the device database. Please put the database
+credentials into the file `mguard-device-database.yaml` and place it beside the `mguard-config-tool(.exe)` executable.
+
+The following snippet shows an example:
+
+```yaml
+credentials:
+  user: "user@domain.com"          # username to use when authenticating to the mGuard device database
+  password: "my-secret-password"   # password to use when authenticating to the mGuard device database
+```
+
 ### Subcommand: user
 
 The `user` subcommand provides access to the user management. All operations run on ECS files only, but support an implicit
-conversion if an ATV file is specified. ATV files do not contain information about user accounts and passwords. By default
-the unencrypted ECS container to work on is expected to be passed via *stdin* to ease scripting without generating temporary
-files. The output of these operations is an unencrypted ECS container that is written to *stdout*. Optionally input and
-output can be regular files as well by specifying `--ecs-in` and `--ecs-out` appropriately.
+conversion if an ATV file is specified. ATV files do not contain information about user accounts and passwords.
+
+By default the unencrypted ECS container to work on is expected to be passed via *stdin* to ease scripting without generating
+temporary files. The output of these operations is an unencrypted ECS container that is written to *stdout*. Optionally input
+and output can be regular files as well by specifying `--ecs-in` and `--ecs-out` appropriately.
 
 ```
 user - Add user and set/verify user passwords (ECS containers only).
@@ -167,7 +198,7 @@ and vice versa.
 
 By default the ECS container to work on is expected to be passed via *stdin* to ease scripting without generating
 temporary files. The output of the operation is an unencrypted ECS container that is written to *stdout*. Optionally
-input and output can be regular files as well by specifying `--ecs-in`, `--ecs-out` and `--atv-out` appropriately.
+input and output can be regular files as well by specifying `--in`, `--atv-out` and `--ecs-out` appropriately.
 
 If an ATV file is passed in and an ECS container is written the conditioned ATV file is stored in the ECS container and
 the missing parts in the ECS container are initialized with defaults. The defaults are the same a new mGuard comes with.
@@ -228,6 +259,41 @@ merge - Merge two mGuard configuration files into one
        --verbose   Include additional messages that might help when problems occur.
 ```
 
+### Subcommand: encrypt
+
+The `encrypt` subcommand encrypts a configuration, so only the mGuard with the specified serial number is able to
+read it. The *mGuard-Config-Tool* connects to the mGuard device database to retrieve the device certificate for
+the mGuard and encrypts the passed ECS container using S/MIME encryption. The encrypted container cannot be opened
+by the *mGuard-Config-Tool* after it any more, so encrypting an ECS container should be the last step.
+
+It might be desirable to cache downloaded certificates locally to improve performance and circumvent possible
+connectivity issues. Therefore you may specify `--cache` to instruct the *mGuard-Config-Tool* to drop downloaded
+certificates into the specified directory and look for needed certificates there first, before trying to download
+them again.
+
+By default the unencrypted ECS container to work on is expected to be passed via *stdin* to ease scripting without
+generating temporary files. The output of the operation is an encrypted ECS container that is written to *stdout*.
+The output can be written to a regular file as well by specifying `--ecs-out` appropriately.
+
+```
+encrypt - Encrypt a mGuard configuration for a mGuard with a specific serial number (requires device database access)
+
+  Usage:
+	encrypt [serial]
+
+  Positional Variables: 
+	serial   Serial number of the mGuard (Required)
+
+  Flags: 
+       --version   Displays the program version string.
+    -h --help      Displays help with available flag, subcommand, and positional value parameters.
+       --in        File containing the mGuard configuration to encrypt (ATV format or unencrypted ECS container)
+       --ecs-out   File receiving the encrypted configuration (ECS container, encrypted, instead of stdout)
+       --cache     Directory where certificates are cached
+       --verbose   Include additional messages that might help when problems occur.
+```
+
+
 ### Subcommand: service \*\***WINDOWS ONLY**\*\*
 
 The `service` subcommand provides access to the *Configuration Preparation Service* (CPS). The CPS is part of the
@@ -281,9 +347,6 @@ The default configuration file looks like the following:
 ```yaml
 cache:
   path: ./data/cache                               # directory: cache for various files (e.g. downloaded certificates)
-device_database:                                   # credentials for the mGuard device database (only needed when creating encrypted ECS files)
-  user: ""                                         # username to use when authenticating against the mGuard device database
-  password: ""                                     # password to use when authenticating against the mGuard device database
 input:
   base_configuration:
     path: ./data/configs/default.atv               # file: base configuration (usually an ATV file)

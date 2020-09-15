@@ -1,0 +1,3 @@
+credentials:
+  user: "user@domain.com"          # username to use when authenticating to the mGuard device database
+  password: "my-secret-password"   # password to use when authenticating to the mGuard device database

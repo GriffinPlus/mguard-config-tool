@@ -92,6 +92,7 @@ func parseArgs() arguments {
 		NewUserCommand(),
 		NewConditionCommand(),
 		NewMergeCommand(),
+		NewEncryptCommand(),
 		NewServiceCommand(),
 	}
 	for _, cmd := range subcommands {
