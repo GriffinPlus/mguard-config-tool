@@ -304,22 +304,17 @@ encrypted to allow the service to process it. The service generates a zip file c
 a specific firmware and to load an initial configuration into a mGuard device. This is particularly useful when preparing
 mGuards in production and allows to run (and update) the *mGuard-Config-Tool* on a server.
 
-By default the service is registered to run as `LocalSystem` which means that it runs with administrative rights on the machine
-it is installed on. This ensures that you do not run into permission issues when running it locally, but you are strongly
-encouraged to create a service account with the minimum rights the service needs to access the configured directories. This
-step is also required when working with shared folders on a network as `LocalSystem` is often not allowed to access file shares.
-
-The name of the ATV/ECS files dropped into the hot-folder must match a specific pattern to get processed. The pattern depends
-on whether the service has to generate encrypted ECS containers. If the service generates unencrypted ECS containers or no
-ECS containers at all, the pattern is `*.(atv|ecs|tgz)`. If the service is configured to generate encrypted ECS containers
-the pattern includes the serial number of the mGuard and is `<serial>.(atv|ecs|tgz)`. The serial number uniquely identifies
-mGuard devices and allows the service to retrieve the appropriate device certificates that are needed to encrypt generated
-ECS files for specific mGuards.
+#### Installing / Uninstalling and Controlling the Service
 
 The `install` and `uninstall` subcommand installs respectively uninstalls the *mGuard-Config-Tool* as a windows service.
 The `start` and `stop` subcommands communicate with the Service Control Manager (SCM) to start/stop the installed service.
 As for all services, the usual service control panel (`services.msc`) can also be used. The `debug` subcommand runs the
 service without installation and is used for debugging purposes only.
+
+By default the service is registered to run as `LocalSystem` which means that it runs with administrative rights on the machine
+it is installed on. This ensures that you do not run into permission issues when running it locally, but you are strongly
+encouraged to create a service account with the minimum rights the service needs to access the configured directories. This
+step is also required when working with shared folders on a network as `LocalSystem` is often not allowed to access file shares.
 
 ```
 service - Controls the mGuard Configuration Preparation Service (CPS)
@@ -339,6 +334,8 @@ service - Controls the mGuard Configuration Preparation Service (CPS)
     -h --help      Displays help with available flag, subcommand, and positional value parameters.
        --verbose   Include additional messages that might help when problems occur.
 ```
+
+#### Configuring the Service
 
 The service can be configured using a YAML configuration file that is expected beside `mguard-config-tool.exe`. It must
 be named `mguard-config-tool.yaml`. The default configuration is generated in the first run, if permissions allow that.
@@ -374,19 +371,39 @@ tools:
 ```
 
 The configured directories are created, if necessary and permissions allow that. Before the service can run, the base
-configuration file and the sdcard template files must be provided in the configured directories. If the base configuration or
-the sdcard template files are missing, the service will fail to start.
+configuration file and the SDCard template files must be provided in the configured directories. If the base configuration or
+the SDCard template files are missing, the service will fail to start.
 
-The *update package* is a zip file that contains all files that need to be copied to an sdcard to flash the mGuard to the
+The *update package* is a zip file that contains all files that need to be copied to a SDCard to flash the mGuard to the
 desired version and install the merged configuration. Depending on the `output.update_packages.configuration` setting in the
 service configuration an ATV file (`Rescue Config/preconfig.atv`), an unencrypted ECS container  (`ECS.tgz`) or an encrypted
-ECS container (`<serial>.ecs.p7e`) is deployed. The preconfiguration script (`Rescue Config/preconfig.sh`) that is is executed
+ECS container (`<serial>.ecs.p7e`) is deployed. The preconfiguration script (`Rescue Config/preconfig.sh`) that is executed
 after the firmware has been flashed successfully is generated from a template (`Rescue Config/preconfig.sh.tmpl`) and tailored
 to the needs of the chosen configuration. When editing `preconfig.sh.tmpl` you MUST ensure that you use LF line endings.
 Using CRLF (windows standard) renders the script unexecutable!
 
-**Beware:** ATV files and unencrypted ECS containers contain unencrypted secrets like VPN certificates. Furthermore using ATV
-files implies setting passwords in plaintext! Therefore the most secure way to get a configuration into a mGuard is to use the
+#### File Name Conventions
+
+The name of the ATV/ECS files dropped into the hot-folder must match a specific pattern to get processed. The pattern depends
+on whether the service has to generate encrypted ECS containers. If the service generates unencrypted ECS containers or no
+ECS containers at all, the pattern is `*.(atv|ecs|tgz)`. If the service is configured to generate encrypted ECS containers
+the pattern includes the serial number of the mGuard and is `<serial>.(atv|ecs|tgz)`. The serial number uniquely identifies
+mGuard devices and allows the service to retrieve the appropriate device certificates that are needed to encrypt generated
+ECS files for specific mGuards.
+
+The name of generated files consist of the basename of the dropped file (without extension) plus a timestamp. For example,
+if you drop a file named `myconfig.atv` into the hotfolder at 2020/01/01 15:01:30 the service will create the following
+files, if it is configured to do so:
+
+- Merged configuration (ATV): `myconfig (20200101150130).atv`
+- Merged configuration (ECS unencrypted): `myconfig (20200101150130).ecs`
+- Merged configuration (ECS encrypted): `myconfig (20200101150130).ecs.p7e`
+- Update Package: `myconfig (20200101150130).zip`
+
+#### Beware!
+
+ATV files and unencrypted ECS containers contain unencrypted secrets like VPN certificates. Furthermore using ATV files
+implies setting passwords in plaintext! Therefore the most secure way to get a configuration into a mGuard is to use the
 encrypted ECS container. ATV files and unencrypted ECS containers should only be used when there is an issue with accessing
 the device database to retrieve mGuard device certificates needed to generate encrypted ECS containers.
 
