@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/griffinplus/mguard-config-tool/mguard/atv"
 
@@ -23,6 +24,7 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 
 	filename := filepath.Base(path)
 	filenameWithoutExtension := strings.TrimSuffix(filename, filepath.Ext(filename))
+	timestamp := time.Now().Format("20060102150405")
 	var err error
 
 	// extract the serial number of the mGuard, if ECS containers should be encrypted
@@ -122,7 +124,7 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 		// write ATV file, if requested
 		if cmd.mergedConfigurationsWriteAtv {
 
-			atvFileName := filenameWithoutExtension + ".atv"
+			atvFileName := filenameWithoutExtension + " (" + timestamp + ")" + ".atv"
 			atvFilePath := filepath.Join(cmd.mergedConfigurationDirectory, atvFileName)
 			log.Infof("Writing ATV file (%s)...", atvFilePath)
 			err = mergedEcs.Atv.ToFile(atvFilePath)
@@ -135,7 +137,7 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 		// write unencrypted ECS file, if requested
 		if cmd.mergedConfigurationsWriteUnencryptedEcs {
 
-			ecsFileName := filenameWithoutExtension + ".ecs"
+			ecsFileName := filenameWithoutExtension + " (" + timestamp + ")" + ".ecs"
 			ecsFilePath := filepath.Join(cmd.mergedConfigurationDirectory, ecsFileName)
 
 			log.Infof("Writing unencrypted ECS file (%s)...", ecsFilePath)
@@ -149,7 +151,7 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 		// write encrypted ECS file, if requested
 		if cmd.mergedConfigurationsWriteEncryptedEcs {
 
-			ecsFileName := filenameWithoutExtension + ".ecs.p7e"
+			ecsFileName := filenameWithoutExtension + " (" + timestamp + ")" + ".ecs.p7e"
 			ecsFilePath := filepath.Join(cmd.mergedConfigurationDirectory, ecsFileName)
 
 			log.Infof("Writing encrypted ECS file (%s)...", ecsFilePath)
@@ -271,7 +273,7 @@ func (cmd *ServiceCommand) processFileInHotfolder(path string) error {
 		}
 
 		// create a package wrapping everything up using zip
-		zipPath := filepath.Join(cmd.updatePackageDirectory, filenameWithoutExtension+".zip")
+		zipPath := filepath.Join(cmd.updatePackageDirectory, filenameWithoutExtension+" ("+timestamp+")"+".zip")
 		err = zipFiles(scratchDir, zipPath)
 		if err != nil {
 			log.Errorf("Creating update package (%s) failed: %s", zipPath, err)
