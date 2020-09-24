@@ -70,8 +70,8 @@ The search path must be adjusted manually on your system to point to the appropr
 Writing encrypted ECS containers also requires access to the mGuard device database. To retrieve device certificates you
 have to register for an account. This can be done using the [registration form](http://update.registration.innominate.com/request_devcertcase.cgi).
 Although the mGuard is distributed by Phoenix Contact now, the URL contains the name of the original manufacturer
-*Innominate*, so don't suprised. Firthermote the registration form contains some fields, that are deprecated now and should
-be filled with fake data. So you can securely pass the following fields:
+*Innominate*, so don't be suprised. Furthermore the registration form contains some fields that are deprecated now and
+should be filled with fake data. So you can securely pass the following fields:
 
 - Reseller: TLK
 - Number of Devices: 100
